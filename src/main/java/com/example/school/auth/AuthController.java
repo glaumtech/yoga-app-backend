@@ -61,10 +61,19 @@ public class AuthController {
         authService.saves(newUser);
        // return ResponseEntity.ok(Collections.singletonMap("message", "Data saved successfully!"));
         Map<String, Object> data = new HashMap<>();
-        data.put("name", newUser.getUsername());
-        data.put("email", newUser.getEmail());
-        data.put("username", newUser.getUsername());
-        data.put("phone_no",newUser.getPhoneNo());
+        Map<String, Object> user = new HashMap<>();
+
+        user.put("email", newUser.getEmail());
+        user.put("username", newUser.getUsername());
+        user.put("phone_no",newUser.getPhoneNo());
+        user.put("role_id", newUser.getRole() != null ? newUser.getRole().getId() : null);
+        if (newUser.getRole() != null) {
+            String roleName = newUser.getRole().getName(); // branch name for other roles
+
+            user.put("role_name", roleName);
+        }
+        user.put("id",newUser.getId());
+        data.put("user",user);
 
         // Build response
         response.put("status", "success");
