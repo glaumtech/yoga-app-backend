@@ -28,7 +28,7 @@ public class AuthController {
     @Autowired
     private RoleRep roleRep;
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    @PostMapping("/save")
+    @PostMapping("/register")
     public ResponseEntity submit(@RequestBody  UserRequest request){
         Map<String, Object> response = new HashMap<>();
         if (authService.findByName(request.getUsername()).isPresent()) {
@@ -151,5 +151,12 @@ public class AuthController {
 //return ResponseEntity.status(401).body(Collections.singletonMap("error", "Invalid credentials"));
         }
     }
-
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("message", "Logged out successfully");
+        return ResponseEntity.ok(response);
+        //return ResponseEntity.ok(Collections.singletonMap("message", "Logged out successfully"));
+    }
 }
