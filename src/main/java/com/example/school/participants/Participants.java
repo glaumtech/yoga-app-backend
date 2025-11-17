@@ -29,6 +29,8 @@ public class Participants {
     private Long yogaMasterContact;
     private String address;
 
+    private boolean deleted = false;
+
     private String photo; // to store image filename
 
 }

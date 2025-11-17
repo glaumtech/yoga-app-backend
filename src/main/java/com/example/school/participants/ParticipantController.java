@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -136,7 +137,7 @@ public ResponseEntity<Map<String, Object>> submitData(
         }
     }
 
-    @GetMapping("/participants")
+    @GetMapping("/list")
     public ResponseEntity<Map<String, Object>> getAllParticipants() {
         Map<String, Object> response = new HashMap<>();
 
@@ -180,56 +181,30 @@ public ResponseEntity<Map<String, Object>> submitData(
         }
     }
 
-//    @PostMapping("/register")
-//    public ResponseEntity<Map<String, Object>> submitData(
-//            @RequestPart("data") RequestDto requestDto,
-//            @RequestPart(value = "photo", required = false) MultipartFile photo) {
-//System.out.println("data"+requestDto);
-//        Map<String, Object> response = new HashMap<>();
-//
-//        try {
-//            // Save participant and get the saved entity (assume it returns a User or Participant object)
-//            Participants newUser = participantService.save(requestDto, photo);
-//
-//            // Build user details map
-//            Map<String, Object> userMap = new HashMap<>();
-//            userMap.put("id", newUser.getId());
-//            userMap.put("participantName",newUser.getParticipantName());
-//            userMap.put("dateOfBirth",newUser.getDateOfBirth());
-//            userMap.put("age",newUser.getAge());
-//            userMap.put("gender",newUser.getGender());
-//            userMap.put("category",newUser.getCategory());
-//            userMap.put("schoolName",newUser.getSchoolName());
-//            userMap.put("standard",newUser.getStandard());
-//            userMap.put("yogaMasterName",newUser.getYogaMasterName());
-//            userMap.put("yogaMasterContact", newUser.getYogaMasterContact());
-//            userMap.put("address",newUser.getAddress());
-//
-//
-//            // Build response data
-//            Map<String, Object> dataMap = new HashMap<>();
-//            dataMap.put("user", userMap);
-//
-//            // Build final response
-//            response.put("status", "success");
-//            response.put("message", "Data saved successfully!");
-//            response.put("data", dataMap);
-//
-//            return ResponseEntity.ok(response);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//
-//            Map<String, Object> errorData = new HashMap<>();
-//            errorData.put("error", e.getMessage()); // optional, can include error info
-//
-//            Map<String, Object> errorResponse = new HashMap<>();
-//            errorResponse.put("status", "error");
-//            errorResponse.put("message", "Error saving data!");
-//            errorResponse.put("data", errorData);
-//
-//            return ResponseEntity.badRequest().body(errorResponse);
-//        }
-//    }
+    @GetMapping
+    public ResponseEntity<Map<String, Object>>  getFilteredTax(@RequestBody PageFilterRequest filter) {
+        Map<String, Object> response = new HashMap<>();
 
+        try {
+            Page<Participants> resultPage = participantService.getFiltered(filter);
+            Page<ParticipantsDto> dtoPage = resultPage.map(ParticipantsDto::new);
+            // return ResponseEntity.ok(dtoPage);
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("users", dtoPage.getContent());
+            dataMap.put("currentPage", dtoPage.getNumber());
+            dataMap.put("totalItems", dtoPage.getTotalElements());
+            dataMap.put("totalPages", dtoPage.getTotalPages());
+
+            response.put("status", "success");
+            response.put("message", "Participants retrieved successfully!");
+            response.put("data", dataMap);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("status", "error");
+            response.put("message", "Error retrieving participants!");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }
