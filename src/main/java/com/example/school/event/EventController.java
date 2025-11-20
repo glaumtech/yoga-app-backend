@@ -6,22 +6,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 @RestController
 @RequestMapping("event")
 public class EventController {
    @Autowired
    private EventService eventService;
+   @Autowired
+   private EventRep eventRep;
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> submitData(
             @RequestPart("data") String data, // JSON string
@@ -51,7 +56,7 @@ public class EventController {
 
 
             Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("user", userMap);
+            dataMap.put("event", userMap);
 
             // Final response
             response.put("status", "success");
@@ -96,7 +101,7 @@ public class EventController {
 
 
             Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("user", userMap);
+            dataMap.put("event", userMap);
 
             // Final response
             response.put("status", "success");
@@ -145,7 +150,7 @@ public class EventController {
             }
 
             Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("users", users);
+            dataMap.put("events", users);
 
             response.put("status", "success");
             response.put("message", "Events retrieved successfully!");
@@ -185,5 +190,48 @@ public class EventController {
         }
     }
 
+    @GetMapping("/image/{id}")
+    public ResponseEntity<?> getImageById(@PathVariable Long id) throws IOException {
+
+        Map<String, Object> response = new HashMap<>();
+
+        // 1️⃣ Find the Event
+        Optional<Event> optionalEvent = eventRep.findById(id);
+        if (optionalEvent.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "Event not found with id " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Event event = optionalEvent.get();
+        String filename = event.getFileName();
+
+        if (filename == null || filename.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "No file found for this event");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // 2️⃣ Get the file
+        Path filePath = Paths.get(System.getProperty("user.dir") + "/uploads").resolve(filename);
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            response.put("status", "error");
+            response.put("message", "File not found on disk");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // 3️⃣ Detect content type
+        String contentType = Files.probeContentType(filePath);
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+
+        // 4️⃣ Return the file as Resource
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
+    }
 
 }

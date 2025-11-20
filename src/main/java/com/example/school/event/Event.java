@@ -22,5 +22,7 @@ public class Event {
     private LocalDate startDate;
     private LocalDate endDate;
     private String fileName;
-    private boolean deleted =false;
+    private boolean active = false;
+    private boolean current = false;
+    private boolean deleted=false;
 }

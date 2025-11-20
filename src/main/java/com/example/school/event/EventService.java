@@ -34,6 +34,8 @@ public class EventService {
         events.setVenueAddress(data.getVenueAddress());
         events.setStartDate(data.getStartDate());
         events.setEndDate(data.getEndDate());
+        events.setActive(data.isActive());
+        events.setCurrent(data.isCurrent());
 
 
         // ✅ Handle file saving (optional)
@@ -71,7 +73,8 @@ public class EventService {
         event.setVenueAddress(data.getVenueAddress());
         event.setStartDate(data.getStartDate());
         event.setEndDate(data.getEndDate());
-
+        event.setActive(data.isActive());
+        event.setCurrent(data.isCurrent());
 
         // File upload → EXACT same style as Event save()
         if (file != null && !file.isEmpty()) {

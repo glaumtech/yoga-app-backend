@@ -1,14 +1,23 @@
 package com.example.school.participants;
 
+import com.example.school.event.Event;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -19,6 +28,8 @@ public class ParticipantController {
 
     @Autowired
     private ParticipantService participantService;
+    @Autowired
+    private ParticipantRep participantRep;
 //    @PostMapping("/register")
 //    public ResponseEntity<Map<String, String>> submitData(@RequestPart("data") String data,
 //
@@ -164,7 +175,49 @@ public ResponseEntity<Map<String, Object>> submitData(
             return ResponseEntity.badRequest().body(response);
         }
     }
+    @GetMapping("/image/{id}")
+    public ResponseEntity<?> getImageById(@PathVariable Long id) throws IOException {
 
+        Map<String, Object> response = new HashMap<>();
+
+        // 1️⃣ Find the Event
+        Optional<Participants> optionalParticipants = participantRep.findById(id);
+        if (optionalParticipants.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "Participant not found with id " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Participants participants = optionalParticipants.get();
+        String filename = participants.getPhoto();
+
+        if (filename == null || filename.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "No file found for this participant");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // 2️⃣ Get the file
+        Path filePath = Paths.get(System.getProperty("user.dir") + "/uploads").resolve(filename);
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            response.put("status", "error");
+            response.put("message", "File not found on disk");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // 3️⃣ Detect content type
+        String contentType = Files.probeContentType(filePath);
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+
+        // 4️⃣ Return the file as Resource
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
+    }
 //    @GetMapping("/list")
 //    public ResponseEntity<Map<String, Object>> getAllParticipants() {
 //        Map<String, Object> response = new HashMap<>();

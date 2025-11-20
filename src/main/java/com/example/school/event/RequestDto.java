@@ -17,4 +17,6 @@ public class RequestDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private String fileName;
+    private boolean active ;
+    private boolean current ;
 }
