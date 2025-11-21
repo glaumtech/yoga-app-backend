@@ -32,8 +32,8 @@ public class JuryController {
             user.put("username", savedUser.getUsername());
             user.put("address", savedUser.getAddress());
             user.put("designation",savedUser.getDesignation());
-            user.put("role_id", savedUser.getRole() != null ? savedUser.getRole().getId() : null);
-            user.put("role_name", savedUser.getRole() != null ? savedUser.getRole().getName() : null);
+            user.put("roleId", savedUser.getRole() != null ? savedUser.getRole().getId() : null);
+            user.put("roleName", savedUser.getRole() != null ? savedUser.getRole().getName() : null);
             user.put("id", savedUser.getId());
 
             Map<String, Object> data = new HashMap<>();
@@ -68,11 +68,11 @@ public class JuryController {
             // Build response map
             Map<String, Object> user = new HashMap<>();
             user.put("id", updatedUser.getId());
-            user.put("username", updatedUser.getUsername());
+            user.put("userName", updatedUser.getUsername());
             user.put("address", updatedUser.getAddress());
             user.put("designation", updatedUser.getDesignation());
-            user.put("role_id", updatedUser.getRole() != null ? updatedUser.getRole().getId() : null);
-            user.put("role_name", updatedUser.getRole() != null ? updatedUser.getRole().getName() : null);
+            user.put("roleId", updatedUser.getRole() != null ? updatedUser.getRole().getId() : null);
+            user.put("roleName", updatedUser.getRole() != null ? updatedUser.getRole().getName() : null);
 
             Map<String, Object> data = new HashMap<>();
             data.put("user", user);
@@ -101,11 +101,11 @@ public class JuryController {
                 Map<String, Object> userMap = new HashMap<>();
                 userMap.put("id", e.getId());
                 userMap.put("name", e.getName());
-                userMap.put("user_name", e.getUsername());
+                userMap.put("userName", e.getUsername());
                 userMap.put("address", e.getAddress());
                 userMap.put("designation", e.getDesignation());
-                userMap.put("role_id", e.getRole() != null ? e.getRole().getId() : null);
-                userMap.put("role_name", e.getRole() != null ? e.getRole().getName() : null);
+                userMap.put("roleId", e.getRole() != null ? e.getRole().getId() : null);
+                userMap.put("roleName", e.getRole() != null ? e.getRole().getName() : null);
 
 
 

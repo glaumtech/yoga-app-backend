@@ -30,7 +30,7 @@ public class EventController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> submitData(
             @RequestPart("data") String data, // JSON string
-            @RequestPart(value = "photo", required = false) MultipartFile photo) {
+            @RequestPart(value = "filename", required = false) MultipartFile photo) {
 
         Map<String, Object> response = new HashMap<>();
         try {
@@ -49,9 +49,9 @@ public class EventController {
             userMap.put("title", newUser.getTitle());
             userMap.put("description", newUser.getDescription());
             userMap.put("venue", newUser.getVenue());
-            userMap.put("venue_address", newUser.getVenueAddress());
-            userMap.put("start_date", newUser.getStartDate());
-            userMap.put("end_date", newUser.getEndDate());
+            userMap.put("venueAddress", newUser.getVenueAddress());
+            userMap.put("startDate", newUser.getStartDate());
+            userMap.put("endDate", newUser.getEndDate());
 
 
 
@@ -76,7 +76,7 @@ public class EventController {
     public ResponseEntity<Map<String,Object>> updateItem(
             @PathVariable Long id,
             @RequestPart("data") String data,
-            @RequestPart(value = "photo", required = false) MultipartFile file) {
+            @RequestPart(value = "filename", required = false) MultipartFile file) {
         Map<String, Object> response = new HashMap<>();
         try {
             // Convert JSON string to DTO
@@ -94,9 +94,9 @@ public class EventController {
             userMap.put("title", newUser.getTitle());
             userMap.put("description", newUser.getDescription());
             userMap.put("venue", newUser.getVenue());
-            userMap.put("venue_address", newUser.getVenueAddress());
-            userMap.put("start_date", newUser.getStartDate());
-            userMap.put("end_date", newUser.getEndDate());
+            userMap.put("venueAddress", newUser.getVenueAddress());
+            userMap.put("startDate", newUser.getStartDate());
+            userMap.put("endDate", newUser.getEndDate());
 
 
 
@@ -139,9 +139,11 @@ public class EventController {
                 userMap.put("title", e.getTitle());
                 userMap.put("description", e.getDescription());
                 userMap.put("venue", e.getVenue());
-                userMap.put("venue_address", e.getVenueAddress());
-                userMap.put("start_date", e.getStartDate());
-                userMap.put("end_date", e.getEndDate());
+                userMap.put("venueAddress", e.getVenueAddress());
+                userMap.put("startDate", e.getStartDate());
+                userMap.put("active",e.isActive());
+                userMap.put("currentStatus",e.isCurrent());
+                userMap.put("endDate", e.getEndDate());
 
                 userMap.put("photo", e.getFileName());
 

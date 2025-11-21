@@ -71,7 +71,7 @@ public class ParticipantController {
 @PostMapping("/register")
 public ResponseEntity<Map<String, Object>> submitData(
         @RequestPart("data") String data, // JSON string
-        @RequestPart(value = "photo", required = false) MultipartFile photo) {
+        @RequestPart(value = "filename", required = false) MultipartFile photo) {
 
     Map<String, Object> response = new HashMap<>();
     try {
