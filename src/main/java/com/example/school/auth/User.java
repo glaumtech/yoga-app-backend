@@ -7,7 +7,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Register {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -16,8 +16,10 @@ public class Register {
     private String email;
     private String password;
     private String confirmPassword;
-    private boolean accepted;
+
     private Long phoneNo;
+    private Long juryId; // link to Jury
+
     @ManyToOne
     private Role role;
 }

@@ -28,9 +28,9 @@ public class Participants {
     private String status;
     private Long yogaMasterContact;
     private String address;
-
+    private String participantCode;
     private boolean deleted = false;
-
+    private Long eventId;
     private String photo; // to store image filename
 
 }

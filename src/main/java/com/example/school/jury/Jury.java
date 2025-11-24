@@ -17,9 +17,6 @@ public class Jury {
     private String name;
     private String address;
     private String designation;
-    private String password;
-    private String confirmPassword;
-    private String username;
-    @ManyToOne
-    private Role role;
+
+
 }

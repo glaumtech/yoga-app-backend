@@ -23,6 +23,8 @@ public class ParticipantsDto {
     private String status;
     private Long yogaMasterContact;
     private String address;
+    private String participantCode;
+    private Long eventId;
 
     private String photo; // to store image filename
 
@@ -33,6 +35,8 @@ public class ParticipantsDto {
         this.age=participants.getAge();
         this.gender=participants.getGender();
         this.category=participants.getCategory();
+        this.eventId=participants.getEventId();
+        this.participantCode=participants.getParticipantCode();
         this.schoolName=participants.getSchoolName();
         this.standard=participants.getStandard();
         this.yogaMasterContact=participants.getYogaMasterContact();

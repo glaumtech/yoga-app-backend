@@ -1,7 +1,5 @@
 package com.example.school.auth;
 
-import com.example.school.role.Role;
-import com.example.school.role.RoleRep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +30,7 @@ public class AuthController {
 
         try {
             // Check if email exists
-            if (authService.findByEmail(request.getEmail()).isPresent()) {
+            if (authService.findByEmailOrPhoneNo(request.getEmail(),request.getPhoneNo()).isPresent()) {
                 response.put("status", "error");
                 response.put("message", "UserName already exists!");
                 response.put("data", null);
@@ -40,7 +38,7 @@ public class AuthController {
             }
 
             // Save user through service
-            Register savedUser = authService.saveUser(request);
+            User savedUser = authService.saveUser(request);
 
             // Build response data
             Map<String, Object> user = new HashMap<>();
@@ -71,7 +69,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserRequest request) {
-        Optional<Register> user = authService.findByEmail(request.getEmail());
+        Optional<User> user = authService.findByEmail(request.getEmail());
         System.out.println("Raw password: '" + request.getPassword() + "'"+"user"+user.get());
         System.out.println("Hashed password: '" + user.get().getPassword() + "'");
         System.out.println("Password match: " + passwordEncoder.matches(request.getPassword(), user.get().getPassword()));

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ParticipantRep extends JpaRepository<Participants,Long> {
@@ -25,5 +26,22 @@ public interface ParticipantRep extends JpaRepository<Participants,Long> {
 
     @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%')) AND p.status = :status")
     Page<Participants> findByNameAndStatusExcludingRejected(@Param("name") String name, @Param("status") String status, Pageable pageable);
+
+    Optional<Participants> findTopByOrderByIdDesc();
+
+    /// /////////
+    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected'  AND p.eventId = :eventId")
+    Page<Participants> findAllExcludingStatusByEvent(@Param("eventId")Long eventId,Pageable pageable);
+    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND p.status = :status AND p.eventId = :eventId")
+    Page<Participants> findByStatusExcludingRejectedByEvent(@Param("status") String status,@Param("eventId")Long eventId, Pageable pageable);
+
+    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND  p.eventId = :eventId AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%'))")
+    Page<Participants> findByNameExcludingStatusByEvent(@Param("name") String name,@Param("eventId")Long eventId, Pageable pageable);
+
+    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%')) AND p.status = :status AND p.eventId = :eventId")
+    Page<Participants> findByNameAndStatusExcludingRejectedByEvent(@Param("name") String name, @Param("status") String status,@Param("eventId")Long eventId, Pageable pageable);
+
+
+
 
 }

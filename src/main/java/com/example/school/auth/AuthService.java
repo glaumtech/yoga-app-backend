@@ -15,14 +15,17 @@ public class AuthService {
 
     @Autowired
     private RoleRep roleRep;
-    public Optional<Register> findByEmail(String email) {
+    public Optional<User> findByEmailOrPhoneNo(String email, Long phoneNo) {
+        return authRep.findByEmailOrPhoneNo(email,phoneNo);
+    }
+    public Optional<User> findByEmail(String email) {
         return authRep.findByEmail(email);
     }
 
 
-    public Register saveUser(UserRequest request) {
+    public User saveUser(UserRequest request) {
 
-            Register newUser = new Register();
+            User newUser = new User();
 
             newUser.setPhoneNo(request.getPhoneNo());
 
@@ -35,7 +38,7 @@ public class AuthService {
 
             newUser.setEmail(request.getEmail());
             newUser.setUsername(request.getUsername());
-            newUser.setAccepted(false);
+
 
             // Encode password
             newUser.setPassword(passwordEncoder.encode(request.getPassword()));

@@ -61,7 +61,7 @@ public class EventService {
 
 
     @Transactional
-    public Event updateItems(RequestDto data, MultipartFile file, Long id) throws IOException {
+    public Event updateEvent(RequestDto data, MultipartFile file, Long id) throws IOException {
 
         Event event = eventRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found!"));

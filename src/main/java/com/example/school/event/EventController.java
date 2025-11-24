@@ -30,7 +30,7 @@ public class EventController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> submitData(
             @RequestPart("data") String data, // JSON string
-            @RequestPart(value = "filename", required = false) MultipartFile photo) {
+            @RequestPart(value = "file", required = false) MultipartFile photo) {
 
         Map<String, Object> response = new HashMap<>();
         try {
@@ -76,7 +76,7 @@ public class EventController {
     public ResponseEntity<Map<String,Object>> updateItem(
             @PathVariable Long id,
             @RequestPart("data") String data,
-            @RequestPart(value = "filename", required = false) MultipartFile file) {
+            @RequestPart(value = "file", required = false) MultipartFile file) {
         Map<String, Object> response = new HashMap<>();
         try {
             // Convert JSON string to DTO
@@ -86,7 +86,7 @@ public class EventController {
             RequestDto requestDto = mapper.readValue(data, RequestDto.class);
 
             // Save participant
-            Event newUser = eventService.updateItems(requestDto, file, id);
+            Event newUser = eventService.updateEvent(requestDto, file, id);
 
             // Build user map
             Map<String, Object> userMap = new HashMap<>();

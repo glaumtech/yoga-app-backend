@@ -68,10 +68,10 @@ public class ParticipantController {
 //        }
 //
 //    }
-@PostMapping("/register")
+@PostMapping("/{eventId}/register")
 public ResponseEntity<Map<String, Object>> submitData(
         @RequestPart("data") String data, // JSON string
-        @RequestPart(value = "filename", required = false) MultipartFile photo) {
+        @RequestPart(value = "file", required = false) MultipartFile photo,@PathVariable Long eventId) {
 
     Map<String, Object> response = new HashMap<>();
     try {
@@ -82,7 +82,7 @@ public ResponseEntity<Map<String, Object>> submitData(
         RequestDto requestDto = mapper.readValue(data, RequestDto.class);
 
         // Save participant
-        Participants newUser = participantService.save(requestDto, photo);
+        Participants newUser = participantService.save(requestDto, photo,eventId);
 
         // Build user map
         Map<String, Object> userMap = new HashMap<>();
@@ -98,6 +98,8 @@ public ResponseEntity<Map<String, Object>> submitData(
         userMap.put("yogaMasterName", newUser.getYogaMasterName());
         userMap.put("yogaMasterContact", newUser.getYogaMasterContact());
         userMap.put("address", newUser.getAddress());
+        userMap.put("participantCode",newUser.getParticipantCode());
+        userMap.put("eventId",newUser.getEventId());
 
 
         Map<String, Object> dataMap = new HashMap<>();
@@ -150,7 +152,7 @@ public ResponseEntity<Map<String, Object>> submitData(
 
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>>  getFilteredTax(@RequestBody PageFilterRequest filter) {
+    public ResponseEntity<Map<String, Object>>  getFiltered(@RequestBody PageFilterRequest filter) {
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -175,6 +177,33 @@ public ResponseEntity<Map<String, Object>> submitData(
             return ResponseEntity.badRequest().body(response);
         }
     }
+    @PostMapping("/{eventId}/eventbased")
+    public ResponseEntity<Map<String, Object>>  getFilteredbyEvent(@RequestBody PageFilterRequest filter,@PathVariable Long eventId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Page<Participants> resultPage = participantService.getFilteredbyEvent(filter,eventId);
+            Page<ParticipantsDto> dtoPage = resultPage.map(ParticipantsDto::new);
+            // return ResponseEntity.ok(dtoPage);
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("users", dtoPage.getContent());
+            dataMap.put("currentPage", dtoPage.getNumber());
+            dataMap.put("totalItems", dtoPage.getTotalElements());
+            dataMap.put("totalPages", dtoPage.getTotalPages());
+
+            response.put("status", "success");
+            response.put("message", "Participants retrieved successfully!");
+            response.put("data", dataMap);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("status", "error");
+            response.put("message", "Error retrieving participants!");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
     @GetMapping("/image/{id}")
     public ResponseEntity<?> getImageById(@PathVariable Long id) throws IOException {
 
@@ -218,7 +247,66 @@ public ResponseEntity<Map<String, Object>> submitData(
                 .contentType(MediaType.parseMediaType(contentType))
                 .body(resource);
     }
-//    @GetMapping("/list")
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Map<String,Object>> update(
+            @PathVariable Long id,
+            @RequestPart("data") String data,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Convert JSON string to DTO
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            RequestDto requestDto = mapper.readValue(data,RequestDto.class);
+
+            // Save participant
+            Participants newUser = participantService.update(requestDto, file, id);
+
+            // Build user map
+            Map<String, Object> userMap = new HashMap<>();
+            userMap.put("id", newUser.getId());
+            userMap.put("participantName", newUser.getParticipantName());
+            userMap.put("dateOfBirth", newUser.getDateOfBirth());
+            userMap.put("age", newUser.getAge());
+            userMap.put("gender", newUser.getGender());
+            userMap.put("category", newUser.getCategory());
+            userMap.put("schoolName", newUser.getSchoolName());
+            userMap.put("status",newUser.getStatus());
+            userMap.put("standard", newUser.getStandard());
+            userMap.put("yogaMasterName", newUser.getYogaMasterName());
+            userMap.put("yogaMasterContact", newUser.getYogaMasterContact());
+            userMap.put("address", newUser.getAddress());
+
+
+
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("event", userMap);
+
+            // Final response
+            response.put("status", "success");
+            response.put("message", "Data updated successfully!");
+            response.put("data", dataMap);
+
+            return ResponseEntity.ok(response);
+
+            //return eventService.updateItems(itemJson, file, id);
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            response.put("status", "error");
+            response.put("message", "Error saving data!");
+            return ResponseEntity.badRequest().body(response);
+
+
+        }
+
+    }
+
+    //    @GetMapping("/list")
 //    public ResponseEntity<Map<String, Object>> getAllParticipants() {
 //        Map<String, Object> response = new HashMap<>();
 //
