@@ -1,9 +1,17 @@
 package com.example.school.participants;
 
 import com.example.school.event.Event;
+import com.example.school.event.EventRep;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -23,9 +32,12 @@ public class ParticipantService {
     @Autowired
     private ParticipantRep participantRep;
 
+    @Autowired
+    private EventRep eventRep;
+
     //    public ResponseEntity<Map<String, String>> save(String data, MultipartFile photo)
 //            throws IOException {
-    public Participants save(RequestDto data, MultipartFile photo,Long eventId) throws IOException {
+    public Participants save(RequestDto data, MultipartFile photo, Long eventId) throws IOException {
         ObjectMapper mapper = new ObjectMapper(); // it from jackson library in spirng boot to handle jso
         // Json to javaObject
         mapper.registerModule(new JavaTimeModule());
@@ -99,28 +111,32 @@ public class ParticipantService {
 //        return participantRep.findByStatus("Accepted"); // only accepted
 //    }
 
-    public Page<Participants> getFilteredbyEvent(PageFilterRequest filter,Long eventId) {
+    public Page<Participants> getFilteredbyEvent(PageFilterRequest filter, Long eventId) {
         Pageable pageable = filter.toPageable();
         String name = filter.getParticipantName();
         String status = filter.getStatus();
 
         if ((name == null || name.isEmpty()) && (status == null || status.isEmpty())) {
             // No name or status filter → return all except Rejected
-            return participantRep.findAllExcludingStatusByEvent(eventId ,pageable);
+            return participantRep.findAllExcludingStatusByEvent(eventId, pageable);
         }
 
         if ((name == null || name.isEmpty())) {
             // Only status filter applied
-            return participantRep.findByStatusExcludingRejectedByEvent(status,eventId,pageable);
+            return participantRep.findByStatusExcludingRejectedByEvent(status, eventId, pageable);
         }
 
         if (status == null || status.isEmpty()) {
             // Only name search applied
-            return participantRep.findByNameExcludingStatusByEvent(name,eventId,pageable);
+            return participantRep.findByNameExcludingStatusByEvent(name, eventId, pageable);
         }
 
         // Both name and status applied
-        return participantRep.findByNameAndStatusExcludingRejectedByEvent(name, status,eventId,pageable);
+        return participantRep.findByNameAndStatusExcludingRejectedByEvent(name, status, eventId, pageable);
+    }
+    public Participants getById(Long id) {
+        return participantRep.findById(id)
+                .orElseThrow(() -> new RuntimeException("Participant not found with id: " + id));
     }
     public Page<Participants> getFiltered(PageFilterRequest filter) {
         Pageable pageable = filter.toPageable();
@@ -129,7 +145,7 @@ public class ParticipantService {
 
         if ((name == null || name.isEmpty()) && (status == null || status.isEmpty())) {
             // No name or status filter → return all except Rejected
-            return participantRep.findAllExcludingStatus(pageable );
+            return participantRep.findAllExcludingStatus(pageable);
         }
 
         if ((name == null || name.isEmpty())) {
@@ -188,4 +204,116 @@ public class ParticipantService {
         return participantRep.save(participants);
     }
 
-}
+    public byte[] generateParticipantPdf(Long id) {
+        Participants p = participantRep.findById(id)
+                .orElseThrow(() -> new RuntimeException("Participant not found"));
+
+        return generateParticipantPDF(p);
+    }
+    public byte[] generateParticipantPDF(Participants p) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            Document document = new Document(PageSize.A4, 40, 40, 40, 40);
+            PdfWriter writer = PdfWriter.getInstance(document, out);
+            document.open();
+
+            // --------- Fonts ----------
+            Font headerFont = new Font(Font.FontFamily.HELVETICA, 20, Font.BOLD);
+            Font subHeaderFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
+            Font labelFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
+            Font valueFont = new Font(Font.FontFamily.HELVETICA, 12);
+            Font footerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC);
+
+            // --------- Header ---------
+            Paragraph header = new Paragraph("Registration Receipt", headerFont);
+            header.setAlignment(Element.ALIGN_CENTER);
+            header.setSpacingAfter(5);
+            document.add(header);
+
+            Paragraph subHeader = new Paragraph("~ International Yoga Festival ~", subHeaderFont);
+            subHeader.setAlignment(Element.ALIGN_CENTER);
+            subHeader.setSpacingAfter(20);
+            document.add(subHeader);
+
+            document.add(new Paragraph("------------------------------------------------------------"));
+
+            // --------- Participant Details ---------
+            document.add(makeLine("Participant Name", p.getParticipantName(), labelFont, valueFont));
+            document.add(makeLine("Participant Code", p.getParticipantCode(), labelFont, valueFont));
+            document.add(makeLine("Event ID", String.valueOf(p.getEventId()), labelFont, valueFont));
+            document.add(makeLine("Gender", p.getGender(), labelFont, valueFont));
+            document.add(makeLine("Age", String.valueOf(p.getAge()), labelFont, valueFont));
+            document.add(makeLine("Category", p.getCategory(), labelFont, valueFont));
+            document.add(makeLine("School Name", p.getSchoolName(), labelFont, valueFont));
+            document.add(makeLine("Standard", p.getStandard(), labelFont, valueFont));
+            document.add(makeLine("Yoga Master", p.getYogaMasterName(), labelFont, valueFont));
+            document.add(makeLine("Contact No.", String.valueOf(p.getYogaMasterContact()), labelFont, valueFont));
+            document.add(makeLine("Address", p.getAddress(), labelFont, valueFont));
+
+            document.add(new Paragraph("------------------------------------------------------------"));
+
+            // -------- STATUS BADGE ----------
+            PdfPTable badgeTable = new PdfPTable(1);
+            badgeTable.setWidthPercentage(30);
+            badgeTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+            PdfPCell badgeCell = new PdfPCell(new Phrase("STATUS: " + "Not Paid",
+                    new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
+            badgeCell.setPadding(8);
+
+
+
+
+
+
+            badgeTable.addCell(badgeCell);
+            document.add(badgeTable);
+
+            document.add(new Paragraph(" "));
+
+            // --------- Authorized Seal on Right ----------
+            PdfPTable footerTable = new PdfPTable(1);
+            footerTable.setWidthPercentage(30);
+            footerTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
+
+            PdfPCell sealCell = new PdfPCell(new Phrase("Authorized Sign", labelFont));
+            sealCell.setBorder(Rectangle.NO_BORDER);
+            sealCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            footerTable.addCell(sealCell);
+
+            document.add(footerTable);
+
+            // -------- Thank You Text --------
+            Paragraph footerText = new Paragraph("Thank you for joining the journey of wellness.", footerFont);
+            footerText.setAlignment(Element.ALIGN_CENTER);
+            footerText.setSpacingBefore(20);
+            document.add(footerText);
+
+            document.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return out.toByteArray();
+    }
+
+    private Paragraph makeLine(String label, String value, Font labelFont, Font valueFont) {
+        Paragraph line = new Paragraph();
+        line.add(new Chunk(label + ": ", labelFont));
+        line.add(new Chunk(value != null ? value : "—", valueFont));
+        line.setSpacingBefore(8);
+        return line;
+    }
+
+
+          }
+
+
+
+
+
+
+
+

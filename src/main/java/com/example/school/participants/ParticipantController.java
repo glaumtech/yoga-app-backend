@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -119,6 +117,47 @@ public ResponseEntity<Map<String, Object>> submitData(
         return ResponseEntity.badRequest().body(response);
     }
 }
+    @GetMapping("/getById/{id}")
+    public ResponseEntity<Map<String,Object>> getParticipantById(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Participants p = participantService.getById(id);
+            Map<String, Object> userMap = new HashMap<>();
+            userMap.put("id", p.getId());
+            userMap.put("participantName", p.getParticipantName());
+            userMap.put("dateOfBirth", p.getDateOfBirth());
+            userMap.put("age", p.getAge());
+            userMap.put("gender", p.getGender());
+            userMap.put("category", p.getCategory());
+            userMap.put("schoolName", p.getSchoolName());
+            userMap.put("status",p.getStatus());
+            userMap.put("standard", p.getStandard());
+            userMap.put("yogaMasterName", p.getYogaMasterName());
+            userMap.put("yogaMasterContact", p.getYogaMasterContact());
+            userMap.put("address", p.getAddress());
+            userMap.put("participantCode",p.getParticipantCode());
+            userMap.put("eventId",p.getEventId());
+
+
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("user", userMap);
+
+            // Final response
+            response.put("status", "success");
+            response.put("message", "Data retrieved successfully!");
+            response.put("data", dataMap);
+
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e){
+
+                e.printStackTrace();
+                response.put("status", "error");
+                response.put("message", "Error in getting data!");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+    }
     // URL example: /status_verify/1/accepted
     @GetMapping("/status_verify/{id}/{status}")
     public ResponseEntity<Map<String,Object>> updateStatus(
@@ -149,6 +188,7 @@ public ResponseEntity<Map<String, Object>> submitData(
             return ResponseEntity.badRequest().body(response);
         }
     }
+
 
 
     @PostMapping
@@ -305,6 +345,38 @@ public ResponseEntity<Map<String, Object>> submitData(
         }
 
     }
+
+    @GetMapping("/{id}/print")
+    public ResponseEntity<byte[]> printParticipant(@PathVariable Long id) {
+        byte[] pdf = participantService.generateParticipantPdf(id);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header("Content-Disposition", "inline; filename=participant_" + id + ".pdf")
+                .body(pdf);
+    }
+//    @GetMapping("/{id}/certificate")
+//    public ResponseEntity<byte[]> getCertificate(@PathVariable Long id) {
+//        try {
+//            byte[] pdfBytes = participantService.generateCertificatePdf(id);
+//
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.APPLICATION_PDF);
+//            headers.setContentDisposition(ContentDisposition.builder("inline")
+//                    .filename("Certificate_" + id + ".pdf")
+//                    .build());
+//
+//            return ResponseEntity.ok()
+//                    .headers(headers)
+//                    .body(pdfBytes);
+//
+//        } catch (RuntimeException ex) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+//        }
+//    }
 
     //    @GetMapping("/list")
 //    public ResponseEntity<Map<String, Object>> getAllParticipants() {
