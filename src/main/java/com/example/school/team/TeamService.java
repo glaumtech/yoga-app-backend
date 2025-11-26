@@ -49,8 +49,8 @@ public class TeamService {
             return teamRepo.save(team); // JPA handles mapping table automatically
         }
 
-    public List<TeamGetDto> getAllTeams() {
-        List<Team> teams = teamRepo.findAllByDeletedFalse();
+    public List<TeamGetDto> getAllTeams(Long eventId) {
+        List<Team> teams = teamRepo.findAllByDeletedFalseAndEventId(eventId);
         return teams.stream()
                 .map(TeamGetDto::new)
                 .toList();

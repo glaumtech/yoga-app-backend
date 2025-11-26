@@ -12,4 +12,8 @@ public class JuryDto {
         this.id = jury.getId();
         this.name = jury.getName();
     }
+
+    public JuryDto(){
+
+    }
 }

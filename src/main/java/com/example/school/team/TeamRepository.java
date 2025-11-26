@@ -11,5 +11,5 @@ public interface TeamRepository extends JpaRepository<Team,Long> {
 
     boolean existsByNameIgnoreCaseAndIdNotAndDeletedFalse(String name, Long id);
 
-    List<Team> findAllByDeletedFalse();
+    List<Team> findAllByDeletedFalseAndEventId(Long eventId);
 }

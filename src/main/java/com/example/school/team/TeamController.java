@@ -41,11 +41,11 @@ public class TeamController {
     }
 
     // Get all teams (optional)
-    @GetMapping("/all")
-    public ResponseEntity<?> getAllTeams() {
+    @GetMapping("/{eventId}/all")
+    public ResponseEntity<?> getAllTeams(@PathVariable Long eventId) {
         Map<String, Object> response = new HashMap<>();
         try {
-            List<TeamGetDto> teams = teamService.getAllTeams();
+            List<TeamGetDto> teams = teamService.getAllTeams(eventId);
             Map<String, Object> data = new HashMap<>();
             data.put("teams", teams);
 
