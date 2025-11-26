@@ -26,7 +26,9 @@ public class JuryService {
     private PasswordEncoder passwordEncoder;
 
     public ResponseDto saveUser(RequestDto request) {
-
+        if (juryRep.existsByNameIgnoreCaseAndDeletedFalse(request.getName())) {
+            throw new RuntimeException("Judge with name '" + request.getName() + "' already exists!");
+        }
         Jury newUser = new Jury();
 
         newUser.setName(request.getName());
@@ -53,6 +55,7 @@ public class JuryService {
         registerUser.setUsername(request.getUsername());
         registerUser.setPassword(passwordEncoder.encode(request.getPassword()));
         registerUser.setConfirmPassword(request.getConfirmPassword());
+        registerUser.setEmail(request.getEmail());
         if ("judge".equalsIgnoreCase(request.getRole())) {
 
             Role userRole = roleRep.findByName("JUDGE")
@@ -79,7 +82,9 @@ public class JuryService {
     }
 
     public ResponseDto updateUser(RequestDto request, Long id) {
-
+        if (juryRep.existsByNameIgnoreCaseAndIdNotAndDeletedFalse(request.getName(), request.getId())) {
+            throw new RuntimeException("Another jury with this name already exists!");
+        }
         Jury user = juryRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -107,6 +112,7 @@ public class JuryService {
                         registerUser.setPassword(passwordEncoder.encode(request.getPassword()));
             registerUser.setConfirmPassword(request.getConfirmPassword());
         }
+        registerUser.setEmail(request.getEmail());
         if(request.getRole()!=null){
             Role role = roleRep.findByName(request.getRole())
                     .orElseThrow(() -> new RuntimeException("Role not found"));

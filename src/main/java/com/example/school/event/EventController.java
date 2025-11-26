@@ -68,7 +68,7 @@ public class EventController {
         } catch (Exception e) {
             e.printStackTrace();
             response.put("status", "error");
-            response.put("message", "Error saving data!");
+            response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
@@ -117,7 +117,7 @@ public class EventController {
 
             e.printStackTrace();
             response.put("status", "error");
-            response.put("message", "Error saving data!");
+            response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
 
 

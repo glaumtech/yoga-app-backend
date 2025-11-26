@@ -15,4 +15,5 @@ public class RequestDto {
     private String confirmPassword;
     private String username;
     private String role;
+    private String email;
 }

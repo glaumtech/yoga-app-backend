@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.*;
+import com.itextpdf.text.html.simpleparser.HTMLWorker;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -20,11 +21,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
+import java.util.List;
 
 @Service
 public class ParticipantService {
@@ -35,6 +40,10 @@ public class ParticipantService {
     @Autowired
     private EventRep eventRep;
 
+    @Autowired
+    private SpringTemplateEngine templateEngine;
+
+
     //    public ResponseEntity<Map<String, String>> save(String data, MultipartFile photo)
 //            throws IOException {
     public Participants save(RequestDto data, MultipartFile photo, Long eventId) throws IOException {
@@ -42,6 +51,11 @@ public class ParticipantService {
         // Json to javaObject
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        if (participantRep.existsByParticipantNameIgnoreCaseAndDeletedFalse(data.getParticipantName())) {
+            throw new RuntimeException(
+                    "Participant '" + data.getParticipantName() + "' already exists!"
+            );
+        }
 
         Participants participants = new Participants();
 
@@ -164,6 +178,12 @@ public class ParticipantService {
 
     @Transactional
     public Participants update(RequestDto data, MultipartFile file, Long id) throws IOException {
+        if (participantRep.existsByParticipantNameIgnoreCaseAndIdNotAndDeletedFalse(
+                data.getParticipantName(),
+                data.getId()
+        )) {
+            throw new RuntimeException("Another participant with the same name already exists!");
+        }
 
         Participants participants = participantRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Participant not found!"));
@@ -308,12 +328,42 @@ public class ParticipantService {
     }
 
 
-          }
+    public Participants getParticipantById(Long id) {
+        return participantRep.findById(id)
+                .orElseThrow(() -> new RuntimeException("Participant not found with id: " + id));
+    }
+    public byte[] generateCertificatePdf(Long participantId) throws Exception {
 
+        // 1️⃣ Fetch participant details
+        Participants participant = getParticipantById(participantId);
+        if (participant == null) {
+            throw new RuntimeException("Participant not found");
+        }
 
+        // 2️⃣ Prepare Thymeleaf context
+        Context context = new Context();
+        context.setVariable("participantName", participant.getParticipantName());
+        context.setVariable("coordinator", "Jane Smith");
+        context.setVariable("message", "Your dedication and commitment to the art of yoga is commendable. We celebrate your journey of wellness and growth.");
 
+        // 3️⃣ Render Thymeleaf HTML template
+        String htmlContent = templateEngine.process("certificate", context);
 
+        // 4️⃣ Convert HTML to PDF (iText 5)
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
+        PdfWriter.getInstance(document, out);
+        document.open();
 
+        List<Element> elements = HTMLWorker.parseToList(new StringReader(htmlContent), null);
+        for (Element e : elements) {
+            document.add(e);
+        }
+
+        document.close();
+        return out.toByteArray();
+    }
+}
 
 
 

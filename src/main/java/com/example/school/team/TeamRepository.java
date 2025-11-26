@@ -1,13 +1,15 @@
-package com.example.school.jury;
+package com.example.school.team;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface JuryRepository extends JpaRepository<Jury,Long> {
-    List<Jury> findByDeletedFalseOrderByIdDesc();
-
+@Repository
+public interface TeamRepository extends JpaRepository<Team,Long> {
     boolean existsByNameIgnoreCaseAndDeletedFalse(String name);
 
     boolean existsByNameIgnoreCaseAndIdNotAndDeletedFalse(String name, Long id);
+
+    List<Team> findAllByDeletedFalse();
 }

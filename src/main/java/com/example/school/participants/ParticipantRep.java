@@ -42,6 +42,8 @@ public interface ParticipantRep extends JpaRepository<Participants,Long> {
     Page<Participants> findByNameAndStatusExcludingRejectedByEvent(@Param("name") String name, @Param("status") String status,@Param("eventId")Long eventId, Pageable pageable);
 
 
+    boolean existsByParticipantNameIgnoreCaseAndDeletedFalse(String participantName);
 
 
+    boolean existsByParticipantNameIgnoreCaseAndIdNotAndDeletedFalse(String participantName, Long id);
 }

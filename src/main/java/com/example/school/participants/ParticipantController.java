@@ -355,30 +355,30 @@ public ResponseEntity<Map<String, Object>> submitData(
                 .header("Content-Disposition", "inline; filename=participant_" + id + ".pdf")
                 .body(pdf);
     }
-//    @GetMapping("/{id}/certificate")
-//    public ResponseEntity<byte[]> getCertificate(@PathVariable Long id) {
-//        try {
-//            byte[] pdfBytes = participantService.generateCertificatePdf(id);
-//
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentType(MediaType.APPLICATION_PDF);
-//            headers.setContentDisposition(ContentDisposition.builder("inline")
-//                    .filename("Certificate_" + id + ".pdf")
-//                    .build());
-//
-//            return ResponseEntity.ok()
-//                    .headers(headers)
-//                    .body(pdfBytes);
-//
-//        } catch (RuntimeException ex) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-//        }
-//    }
+    @GetMapping("/{id}/certificate")
+    public ResponseEntity<byte[]> getCertificate(@PathVariable Long id) {
+        try {
+            byte[] pdfBytes = participantService.generateCertificatePdf(id);
 
-    //    @GetMapping("/list")
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(ContentDisposition.builder("inline")
+                    .filename("Certificate_" + id + ".pdf")
+                    .build());
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+//        @GetMapping("/list")
 //    public ResponseEntity<Map<String, Object>> getAllParticipants() {
 //        Map<String, Object> response = new HashMap<>();
 //

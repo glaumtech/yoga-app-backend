@@ -1,0 +1,99 @@
+package com.example.school.team;
+
+import com.example.school.event.Event;
+import com.example.school.event.EventRep;
+import com.example.school.jury.Jury;
+import com.example.school.jury.JuryDto;
+import com.example.school.jury.JuryRep;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class TeamService {
+
+
+        @Autowired
+        private TeamRepository teamRepo;
+
+        @Autowired
+        private JuryRep juryRepo;
+
+        @Autowired
+        private EventRep eventRepo;
+
+        public Team createTeam(TeamRequestDto request) {
+            if (teamRepo.existsByNameIgnoreCaseAndDeletedFalse(request.getName())) {
+                throw new RuntimeException("Team with name '" + request.getName() + "' already exists!");
+            }
+            Team team = new Team();
+            team.setName(request.getName());
+            team.setCategory(request.getCategory());
+
+            // Set event
+            Event event = eventRepo.findById(request.getEventId())
+                    .orElseThrow(() -> new RuntimeException("Event not found"));
+            team.setEventId(event.getId());
+
+            // Fetch juries from DB
+            List<Long> juryIds = request.getJuryList().stream()
+                    .map(JuryDto::getId)
+                    .toList();
+
+            // Fetch juries from DB
+            List<Jury> juries = juryRepo.findAllById(juryIds);
+            team.setJuryList(juries);
+
+            return teamRepo.save(team); // JPA handles mapping table automatically
+        }
+
+    public List<TeamGetDto> getAllTeams() {
+        List<Team> teams = teamRepo.findAllByDeletedFalse();
+        return teams.stream()
+                .map(TeamGetDto::new)
+                .toList();
+    }
+
+    public Team updateTeam(Long id, TeamRequestDto request) {
+        if (teamRepo.existsByNameIgnoreCaseAndIdNotAndDeletedFalse(request.getName(), request.getId())) {
+            throw new RuntimeException("Another team with this name already exists!");
+        }
+        Team team = teamRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Team not found"));
+        team.setName(request.getName());
+        team.setCategory(request.getCategory());
+
+        // Set event
+        Event event = eventRepo.findById(request.getEventId())
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        team.setEventId(event.getId());
+        List<Long> juryIds = request.getJuryList().stream()
+                .map(JuryDto::getId)
+                .toList();
+
+        // Fetch juries from DB
+        List<Jury> juries = juryRepo.findAllById(juryIds);
+        team.setJuryList(juries);
+        return teamRepo.save(team); // JPA handles mapping table automatically
+    }
+    public void deleteData(Long id) {
+        Optional<Team> optionalTeam = teamRepo.findById(id);
+
+
+        if (optionalTeam.isPresent()) {
+            Team team = optionalTeam.get();
+
+
+
+            team.setDeleted(true); // Soft delete
+            teamRepo.save(team);
+        } else {
+            throw new RuntimeException("Team not found with ID: " + id);
+        }
+    }
+
+}
+
+

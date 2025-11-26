@@ -24,6 +24,15 @@ public class EventService {
         // Json to javaObject
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        if (eventRep.existsByTitleIgnoreCaseAndStartDateAndEndDateAndDeletedFalse(
+                data.getTitle(),
+                data.getStartDate(),
+                data.getEndDate()
+        )) {
+            throw new RuntimeException(
+                    "Event '" + data.getTitle() + "' already exists for these dates!"
+            );
+        }
 
         Event events = new Event();
 
@@ -62,7 +71,9 @@ public class EventService {
 
     @Transactional
     public Event updateEvent(RequestDto data, MultipartFile file, Long id) throws IOException {
-
+        if (eventRep.existsByTitleIgnoreCaseAndIdNotAndDeletedFalse(data.getTitle(), data.getId())) {
+            throw new RuntimeException("Another event with the same name already exists!");
+        }
         Event event = eventRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found!"));
 
