@@ -25,6 +25,8 @@ public class ParticipantsDto {
     private String address;
     private String participantCode;
     private Long eventId;
+    private String assignmentStatus;
+    private String group;
 
     private String photo; // to store image filename
 
@@ -44,5 +46,7 @@ public class ParticipantsDto {
         this.status=participants.getStatus();
         this.address=participants.getAddress();
         this.photo=participants.getPhoto();
+        this.group=participants.getGroupName();
     }
+
 }

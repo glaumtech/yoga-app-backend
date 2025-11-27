@@ -20,6 +20,7 @@ public class RequestDto {
     private String standard;
     private String yogaMasterName;
     private Long yogaMasterContact;
+    private String group;
     private String address;
 //    private Long eventId;
 }

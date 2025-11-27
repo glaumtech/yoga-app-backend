@@ -30,6 +30,7 @@ public class Participants {
     private String address;
     private String participantCode;
     private boolean deleted = false;
+    private String groupName;
     private Long eventId;
     private String photo; // to store image filename
 

@@ -2,6 +2,8 @@ package com.example.school.participants;
 
 import com.example.school.event.Event;
 import com.example.school.event.EventRep;
+import com.example.school.participants.assignedparticipants.AssignedParticipant;
+import com.example.school.participants.assignedparticipants.AssignedRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -15,6 +17,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +47,9 @@ public class ParticipantService {
     @Autowired
     private SpringTemplateEngine templateEngine;
 
+    @Autowired
+    private AssignedRepo assignedRepo;
+
 
     //    public ResponseEntity<Map<String, String>> save(String data, MultipartFile photo)
 //            throws IOException {
@@ -68,6 +75,7 @@ public class ParticipantService {
         participants.setGender(data.getGender());
         participants.setCategory(data.getCategory());
         participants.setSchoolName(data.getSchoolName());
+        participants.setGroupName(data.getGroup());
         participants.setStandard(data.getStandard());
         participants.setYogaMasterName(data.getYogaMasterName());
         participants.setYogaMasterContact(data.getYogaMasterContact());
@@ -125,55 +133,112 @@ public class ParticipantService {
 //        return participantRep.findByStatus("Accepted"); // only accepted
 //    }
 
-    public Page<Participants> getFilteredbyEvent(PageFilterRequest filter, Long eventId) {
-        Pageable pageable = filter.toPageable();
-        String name = filter.getParticipantName();
-        String status = filter.getStatus();
+//    public Page<Participants> getFilteredbyEvent(PageFilterRequest filter, Long eventId) {
+//        Pageable pageable = filter.toPageable();
+//        String name = filter.getParticipantName();
+//        String status = filter.getStatus();
+//
+//        if ((name == null || name.isEmpty()) && (status == null || status.isEmpty())) {
+//            // No name or status filter → return all except Rejected
+//            return participantRep.findAllExcludingStatusByEvent(eventId, pageable);
+//        }
+//
+//        if ((name == null || name.isEmpty())) {
+//            // Only status filter applied
+//            return participantRep.findByStatusExcludingRejectedByEvent(status, eventId, pageable);
+//        }
+//
+//        if (status == null || status.isEmpty()) {
+//            // Only name search applied
+//            return participantRep.findByNameExcludingStatusByEvent(name, eventId, pageable);
+//        }
+//
+//        // Both name and status applied
+//        return participantRep.findByNameAndStatusExcludingRejectedByEvent(name, status, eventId, pageable);
+//    }
 
-        if ((name == null || name.isEmpty()) && (status == null || status.isEmpty())) {
-            // No name or status filter → return all except Rejected
-            return participantRep.findAllExcludingStatusByEvent(eventId, pageable);
-        }
+    public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest request) {
+        Pageable pageable = request.toPageable();
+        ParticipantFilter filter = request.getFilter();
 
-        if ((name == null || name.isEmpty())) {
-            // Only status filter applied
-            return participantRep.findByStatusExcludingRejectedByEvent(status, eventId, pageable);
-        }
+        String participantValue = filter != null ? filter.getParticipant() : null;
+        String groupValue = filter != null ? filter.getGroup() : null;
 
-        if (status == null || status.isEmpty()) {
-            // Only name search applied
-            return participantRep.findByNameExcludingStatusByEvent(name, eventId, pageable);
-        }
+        // Fetch participants based on other filters
+        Page<Participants> participants = participantRep.findFilteredParticipants(
+                participantValue,
+                filter != null ? filter.getStatus() : null,
+                filter != null ? filter.getCategory() : null,
+                groupValue,
+                eventId,
+                pageable
+        );
 
-        // Both name and status applied
-        return participantRep.findByNameAndStatusExcludingRejectedByEvent(name, status, eventId, pageable);
+        // Get assigned IDs
+        List<Long> assignedIds = (filter != null && filter.getCategory() != null) ?
+                assignedRepo.findAllByEventIdAndCategory(eventId, filter.getCategory())
+                        .stream().map(AssignedParticipant::getParticipantId).toList() :
+                assignedRepo.findAllByEventId(eventId)
+                        .stream().map(AssignedParticipant::getParticipantId).toList();
+
+        // Map to DTOs with assignmentStatus
+        List<ParticipantsDto> responseList = participants.stream()
+                .map(p -> {
+                    ParticipantsDto res = new ParticipantsDto(p);
+                    res.setAssignmentStatus(assignedIds.contains(p.getId()) ? "Assigned" : "Not Assigned");
+                    return res;
+                })
+                // Apply assignmentStatus filter if provided
+                .filter(p -> {
+                    if (filter != null && filter.getAssignmentStatus() != null) {
+                        return p.getAssignmentStatus().equalsIgnoreCase(filter.getAssignmentStatus());
+                    }
+                    return true; // if no filter, keep all
+                })
+                .toList();
+
+        return new PageImpl<>(responseList, pageable, responseList.size());
     }
+
+//    public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest request) {
+//       // Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+//        Pageable pageable = request.toPageable();  // includes sortBy + sortDirection
+//
+//        ParticipantFilter filter = request.getFilter();
+//        String participantValue = filter != null ? filter.getParticipant() : null;
+//        String groupValue = filter != null ? filter.getGroup() : null;
+//
+//        Page<Participants> participants = participantRep.findFilteredParticipants(
+//                participantValue,
+//                filter != null ? filter.getStatus() : null,
+//                filter != null ? filter.getCategory() : null,
+//                groupValue,
+//                eventId,
+//                pageable
+//        );
+//
+//
+//        List<Long> assignedIds = (filter != null && filter.getCategory() != null) ?
+//                assignedRepo.findAllByEventIdAndCategory(eventId, filter.getCategory())
+//                        .stream().map(AssignedParticipant::getParticipantId).toList() :
+//                assignedRepo.findAllByEventId(eventId)
+//                        .stream().map(AssignedParticipant::getParticipantId).toList();
+//
+//        List<ParticipantsDto> responseList = participants.stream()
+//                .map(p -> {
+//                    ParticipantsDto res = new ParticipantsDto(p);
+//
+//                    res.setAssignmentStatus(assignedIds.contains(p.getId()) ? "Assigned" : "Not Assigned");
+//                    return res;
+//                }).toList();
+//
+//        return new PageImpl<>(responseList, pageable, participants.getTotalElements());
+//    }
+
+
     public Participants getById(Long id) {
         return participantRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Participant not found with id: " + id));
-    }
-    public Page<Participants> getFiltered(PageFilterRequest filter) {
-        Pageable pageable = filter.toPageable();
-        String name = filter.getParticipantName();
-        String status = filter.getStatus();
-
-        if ((name == null || name.isEmpty()) && (status == null || status.isEmpty())) {
-            // No name or status filter → return all except Rejected
-            return participantRep.findAllExcludingStatus(pageable);
-        }
-
-        if ((name == null || name.isEmpty())) {
-            // Only status filter applied
-            return participantRep.findByStatusExcludingRejected(status, pageable);
-        }
-
-        if (status == null || status.isEmpty()) {
-            // Only name search applied
-            return participantRep.findByNameExcludingStatus(name, pageable);
-        }
-
-        // Both name and status applied
-        return participantRep.findByNameAndStatusExcludingRejected(name, status, pageable);
     }
 
     @Transactional
@@ -200,6 +265,7 @@ public class ParticipantService {
         participants.setYogaMasterName(data.getYogaMasterName());
         participants.setYogaMasterContact(data.getYogaMasterContact());
         participants.setAddress(data.getAddress());
+        participants.setGroupName(data.getGroup());
         //participants.setStatus("Requested");
         // File upload → EXACT same style as Event save()
         if (file != null && !file.isEmpty()) {

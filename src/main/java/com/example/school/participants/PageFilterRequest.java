@@ -9,13 +9,8 @@ import org.springframework.data.domain.Sort;
 @Getter
 @Setter
 public class PageFilterRequest {
-    // Search by name
-    private String participantName;
 
-    // Filter by status (accepted/requested)
-    private String status;
-
-
+    private ParticipantFilter filter;
     private int page = 0;
     private int size = 10;
     private String sortBy = "id";

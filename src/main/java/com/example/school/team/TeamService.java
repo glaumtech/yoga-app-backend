@@ -41,7 +41,14 @@ public class TeamService {
             List<Long> juryIds = request.getJuryList().stream()
                     .map(JuryDto::getId)
                     .toList();
+            for (Long juryId : juryIds) {
+                List<Team> assignedTeams =
+                        teamRepo.findTeamsByJuryAndEvent(juryId, request.getEventId());
 
+                if (!assignedTeams.isEmpty()) {
+                    throw new RuntimeException("Jury ID " + juryId + " is already assigned to another team!");
+                }
+            }
             // Fetch juries from DB
             List<Jury> juries = juryRepo.findAllById(juryIds);
             team.setJuryList(juries);

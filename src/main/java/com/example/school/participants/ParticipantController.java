@@ -191,39 +191,13 @@ public ResponseEntity<Map<String, Object>> submitData(
 
 
 
-    @PostMapping
-    public ResponseEntity<Map<String, Object>>  getFiltered(@RequestBody PageFilterRequest filter) {
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            Page<Participants> resultPage = participantService.getFiltered(filter);
-            Page<ParticipantsDto> dtoPage = resultPage.map(ParticipantsDto::new);
-            // return ResponseEntity.ok(dtoPage);
-            Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("users", dtoPage.getContent());
-            dataMap.put("currentPage", dtoPage.getNumber());
-            dataMap.put("totalItems", dtoPage.getTotalElements());
-            dataMap.put("totalPages", dtoPage.getTotalPages());
-
-            response.put("status", "success");
-            response.put("message", "Participants retrieved successfully!");
-            response.put("data", dataMap);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.put("status", "error");
-            response.put("message", "Error retrieving participants!");
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-    @PostMapping("/{eventId}/eventbased")
+       @PostMapping("/{eventId}/eventbased")
     public ResponseEntity<Map<String, Object>>  getFilteredbyEvent(@RequestBody PageFilterRequest filter,@PathVariable Long eventId) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            Page<Participants> resultPage = participantService.getFilteredbyEvent(filter,eventId);
-            Page<ParticipantsDto> dtoPage = resultPage.map(ParticipantsDto::new);
+            Page<ParticipantsDto> dtoPage = participantService.getFilteredByEvent(eventId,filter);
+           // Page<ParticipantsDto> dtoPage = resultPage.map(ParticipantsDto::new);
             // return ResponseEntity.ok(dtoPage);
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("users", dtoPage.getContent());
