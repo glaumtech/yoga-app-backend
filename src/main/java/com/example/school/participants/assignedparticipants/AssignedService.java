@@ -1,7 +1,10 @@
 package com.example.school.participants.assignedparticipants;
 
 import com.example.school.jury.JuryDto;
+import com.example.school.participants.PageFilterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.expression.spel.ast.Assign;
 import org.springframework.stereotype.Service;
 
@@ -118,6 +121,12 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
 public List<ParticipantRequest> getParticipantsForJury(Long eventId, Long juryId) {
     return assignedRepo.findParticipantsByEventAndJury(eventId, juryId);
 }
+    public Page<ParticipantRequest> getParticipantsByEvent(Long eventId, PageFilterRequest request) {
+        // Create pageable using request's toPageable() method
+        var pageable = request.toPageable();
 
+        // Fetch participants
+        return assignedRepo.findParticipantsByEvent(eventId, pageable);
+    }
 
 }

@@ -1,7 +1,12 @@
 package com.example.school.participants.assignedparticipants;
 
 
+import com.example.school.participants.PageFilterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,10 +54,10 @@ public class AssignedController {
 //        return ResponseEntity.ok(service.getAssignmentsByEvent(eventId));
 //    }
 
-    @GetMapping("/{eventId}/jury/{juryId}")
+    @GetMapping("/event/{eventId}")
     public ResponseEntity<Map<String, Object>> getParticipantsByJury(
             @PathVariable Long eventId,
-            @PathVariable Long juryId
+            @RequestParam(required = false) Long juryId  // optional
     ) {
         Map<String, Object> response = new HashMap<>();
 
@@ -73,6 +78,26 @@ public class AssignedController {
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
+    }
+    @PostMapping("/{eventId}/participants")
+    public ResponseEntity<Map<String, Object>> getParticipantsByEvent(
+            @PathVariable Long eventId,
+            @RequestBody PageFilterRequest request
+    ) {
+        Page<ParticipantRequest> participantsPage = assignedService.getParticipantsByEvent(eventId, request);
+
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("users", participantsPage.getContent());
+        dataMap.put("currentPage", participantsPage.getNumber());
+        dataMap.put("totalItems", participantsPage.getTotalElements());
+        dataMap.put("totalPages", participantsPage.getTotalPages());
+        response.put("status", "success");
+        response.put("message", "Assigned Participants retrieved successfully!");
+        response.put("data", dataMap);
+
+
+        return ResponseEntity.ok(response);
     }
 
 }
