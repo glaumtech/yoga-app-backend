@@ -10,6 +10,7 @@ import java.util.List;
 public class RequestDto {
     private Long eventId;
     private List<JuryDto> juryDtos;
-    private List<ParticipantRequest> participants;
+    private List<ParticipantsDto> participants;
     private String category;
+    private Long teamId;
 }

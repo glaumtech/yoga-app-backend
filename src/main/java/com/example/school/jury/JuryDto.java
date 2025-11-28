@@ -12,6 +12,10 @@ public class JuryDto {
         this.id = jury.getId();
         this.name = jury.getName();
     }
+    public JuryDto(Long id,String name){
+        this.id=id;
+        this.name=name;
+    }
 
     public JuryDto(){
 

@@ -10,20 +10,14 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class AssignedParticipant {
+public class AssignedGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long eventId;
+
+    private Long teamId;
 
 
-private Long assignedGroupId;
-
-    private Long participantId;
-
-    private Long juryId;
-
-    private String category; // Can be common/special per participant if needed
-
-    private String status; // Assigned / Not Assigned
 }
