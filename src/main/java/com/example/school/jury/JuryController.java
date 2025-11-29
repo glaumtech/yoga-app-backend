@@ -187,5 +187,45 @@ public class JuryController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    @GetMapping("/judge-id/{userId}")
+    public ResponseEntity<Map<String, Object>> getJuryIdByUserId(@PathVariable Long userId) {
+
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
+
+        try {
+
+            if (userId == null) {
+                response.put("status", false);
+                response.put("message", "User ID cannot be null");
+                response.put("data", null);
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            Optional<Jury> juryOptional = juryRepository.findByUserId(userId);
+
+            if (juryOptional.isEmpty()) {
+                response.put("status", "failure");
+                response.put("message", "Jury not found for this user");
+                response.put("data", null);
+                return ResponseEntity.status(404).body(response);
+            }
+
+            // Jury found → return only juryId
+            data.put("juryId", juryOptional.get().getId());
+
+            response.put("status", "success");
+            response.put("message", "Jury found");
+            response.put("data", data);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("status", "failure");
+            response.put("message", "Something went wrong: " + e.getMessage());
+            response.put("data", null);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 
 }
