@@ -107,20 +107,6 @@ public class AuthController {
             userDetails.put("id",user.get().getId());
             userDetails.put("role_id", user.get().getRole() != null ? user.get().getRole().getId() : null);
 // Check if frontend role matches DB role
-            if (request.getRole() != null
-                    && optionaUser.getRole() != null
-                    && request.getRole().equalsIgnoreCase(optionaUser.getRole().getName())) {
-
-                // Only fetch juryId if the role is JUDGE
-                if ("JUDGE".equalsIgnoreCase(request.getRole())) {
-                    Optional<Jury> juryOptional = juryRepository.findByUserId(optionaUser.getId());
-                    juryOptional.ifPresent(jury -> userDetails.put("jury_id", jury.getId()));
-                }
-
-            } else if (!request.getRole().equalsIgnoreCase(optionaUser.getRole().getName())) {
-                // Role mismatch - optional: throw error or ignore jury_id
-                throw new RuntimeException("Role mismatch: Frontend role does not match user's actual role");
-            }
 
 
             data.put("token", token);
@@ -167,6 +153,46 @@ public ResponseEntity<Map<String, Object>> logout(@RequestHeader(value = "Author
 }
 
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<Map<String, Object>> getJuryIdByUserId(@PathVariable Long userId) {
+
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
+
+        try {
+
+            if (userId == null) {
+                response.put("status", false);
+                response.put("message", "User ID cannot be null");
+                response.put("data", null);
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            Optional<Jury> juryOptional = juryRepository.findByUserId(userId);
+
+            if (juryOptional.isEmpty()) {
+                response.put("status", "failure");
+                response.put("message", "Jury not found for this user");
+                response.put("data", null);
+                return ResponseEntity.status(404).body(response);
+            }
+
+            // Jury found → return only juryId
+            data.put("juryId", juryOptional.get().getId());
+
+            response.put("status", "success");
+            response.put("message", "Jury found");
+            response.put("data", data);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("status", "failure");
+            response.put("message", "Something went wrong: " + e.getMessage());
+            response.put("data", null);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 
 
 

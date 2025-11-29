@@ -1,4 +1,4 @@
-package com.example.school.scoring;
+package com.example.school.scoring.request;
 
 import lombok.Getter;
 import lombok.Setter;

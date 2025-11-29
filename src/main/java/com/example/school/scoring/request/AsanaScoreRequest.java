@@ -1,8 +1,8 @@
-package com.example.school.scoring;
+package com.example.school.scoring.request;
 
 import lombok.Getter;
 import lombok.Setter;
-import java.util.List;
+
 @Getter
 @Setter
 public class AsanaScoreRequest {

@@ -1,4 +1,4 @@
-package com.example.school.scoring;
+package com.example.school.scoring.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

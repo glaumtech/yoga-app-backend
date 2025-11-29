@@ -3,6 +3,9 @@ package com.example.school.scoring;
 import com.example.school.jury.JuryRepository;
 import com.example.school.participants.ParticipantRep;
 import com.example.school.scoring.entity.ParticipantAsana;
+import com.example.school.scoring.entity.Scoring;
+import com.example.school.scoring.request.AsanaScoreRequest;
+import com.example.school.scoring.request.ParticipantScoreRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -114,6 +117,47 @@ public class ScoringService {
 
         return result;
     }
+
+
+    public Map<String, Object> getScoresByEventAndParticipant(Long eventId, Long participantId) {
+
+        // Fetch scoring row for this event + participant
+        Scoring scoring =
+                participantEventRepo.findByEventIdAndParticipantIdAndDeletedFalse(eventId, participantId);
+
+        if (scoring == null) {
+            throw new RuntimeException("No score found for participant " + participantId + " in event " + eventId);
+        }
+
+        Map<String, Object> participantMap = new HashMap<>();
+        participantMap.put("participantId", scoring.getParticipantId());
+        participantMap.put("grandTotal", scoring.getGrandTotal());
+        participantMap.put("juryId", scoring.getJuryId());
+
+        // Fetch all asana scores
+        List<ParticipantAsana> asanas =
+                participantAsanaRepo.findByScoringIdAndDeletedFalse(scoring.getId());
+
+        List<Map<String, Object>> asanaList = new ArrayList<>();
+
+        for (ParticipantAsana asana : asanas) {
+            Map<String, Object> asanaMap = new HashMap<>();
+            asanaMap.put("asanaName", asana.getAsanaName());
+            asanaMap.put("score", asana.getScore());
+            asanaList.add(asanaMap);
+        }
+
+        participantMap.put("asanas", asanaList);
+
+        // Final response format
+        Map<String, Object> response = new HashMap<>();
+        response.put("eventId", eventId);
+        response.put("scoreOfParticipant", participantMap);
+
+        return response;
+    }
+
+
 }
 
 

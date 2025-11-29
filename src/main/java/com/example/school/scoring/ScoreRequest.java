@@ -1,5 +1,6 @@
 package com.example.school.scoring;
 
+import com.example.school.scoring.request.ParticipantScoreRequest;
 import lombok.Getter;
 import lombok.Setter;
 

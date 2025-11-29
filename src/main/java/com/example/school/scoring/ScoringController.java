@@ -61,6 +61,31 @@ public class ScoringController {
             }
         }
 
+    // GET scores for a specific participant in an event
+    @GetMapping("/event/{eventId}/participant/{participantId}")
+    public ResponseEntity<Map<String, Object>> getScoresForParticipant(
+            @PathVariable Long eventId,
+            @PathVariable Long participantId) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Retrieve score from service
+            Map<String, Object> participantScore =
+                    scoringService.getScoresByEventAndParticipant(eventId, participantId);
+
+            response.put("status", "success");
+            response.put("message", "Scores retrieved successfully!");
+            response.put("data", Map.of("scoreOfParticipant", participantScore));
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 
 }
 
