@@ -1,5 +1,7 @@
 package com.example.school.auth;
 
+import com.example.school.jury.Jury;
+import com.example.school.jury.JuryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ public class AuthController {
     private JwtTokenUtil jwtTokenUtil;
     @Autowired
     private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private JuryRepository juryRepository;
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -78,8 +82,8 @@ public class AuthController {
         if (user.isPresent() && passwordEncoder.matches(request.getPassword(), user.get().getPassword())) {
 
             UserDetails userDetail = userDetailsService.loadUserByUsername(request.getEmail());
-
-
+            User optionaUser = user.get();
+            String roleName = optionaUser.getRole() != null ? optionaUser.getRole().getName() : null;
 
             String token = jwtTokenUtil.generateToken(userDetail, user.get().getId());
 
@@ -102,6 +106,21 @@ public class AuthController {
             userDetails.put("role_name", adminOrRoleName);
             userDetails.put("id",user.get().getId());
             userDetails.put("role_id", user.get().getRole() != null ? user.get().getRole().getId() : null);
+// Check if frontend role matches DB role
+            if (request.getRole() != null
+                    && optionaUser.getRole() != null
+                    && request.getRole().equalsIgnoreCase(optionaUser.getRole().getName())) {
+
+                // Only fetch juryId if the role is JUDGE
+                if ("JUDGE".equalsIgnoreCase(request.getRole())) {
+                    Optional<Jury> juryOptional = juryRepository.findByUserId(optionaUser.getId());
+                    juryOptional.ifPresent(jury -> userDetails.put("jury_id", jury.getId()));
+                }
+
+            } else if (!request.getRole().equalsIgnoreCase(optionaUser.getRole().getName())) {
+                // Role mismatch - optional: throw error or ignore jury_id
+                throw new RuntimeException("Role mismatch: Frontend role does not match user's actual role");
+            }
 
 
             data.put("token", token);
@@ -150,60 +169,5 @@ public ResponseEntity<Map<String, Object>> logout(@RequestHeader(value = "Author
 
 
 
-
-//    @PostMapping("/register")
-//    public ResponseEntity submit(@RequestBody  UserRequest request){
-//        Map<String, Object> response = new HashMap<>();
-//        if (authService.findByEmail(request.getEmail()).isPresent()) {
-//            response.put("status", "error");
-//            response.put("message", "UserName already exists!");
-//            response.put("data", null);
-//            return ResponseEntity.badRequest().body(response);
-//            // return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Name already exists!"));
-//        }
-//
-//        Register newUser=new Register();
-//        newUser.setPhoneNo(request.getPhoneNo());
-//        if ("user".equalsIgnoreCase(request.getRole())) {
-//            Role userRole = roleRep.findByName("USER")
-//                    .orElseThrow(() -> new RuntimeException("Role not found"));
-//
-//            newUser.setRole(userRole); // set the role object to the user
-//
-//        }
-//
-//        newUser.setEmail(request.getEmail());
-//        newUser.setUsername(request.getUsername());
-//        newUser.setAccepted(false);
-//
-////        Role role=roleRep.findById()
-////        newUser.setRole();
-//
-//        newUser.setPassword(passwordEncoder.encode(request.getPassword())); // ✅ Hash password before saving
-//        newUser.setConfirmPassword(request.getPassword());
-//        authService.saves(newUser);
-//        // return ResponseEntity.ok(Collections.singletonMap("message", "Data saved successfully!"));
-//        Map<String, Object> data = new HashMap<>();
-//        Map<String, Object> user = new HashMap<>();
-//
-//        user.put("email", newUser.getEmail());
-//        user.put("username", newUser.getUsername());
-//        user.put("phone_no",newUser.getPhoneNo());
-//        user.put("role_id", newUser.getRole() != null ? newUser.getRole().getId() : null);
-//        if (newUser.getRole() != null) {
-//            String roleName = newUser.getRole().getName(); // branch name for other roles
-//
-//            user.put("role_name", roleName);
-//        }
-//        user.put("id",newUser.getId());
-//        data.put("user",user);
-//
-//        // Build response
-//        response.put("status", "success");
-//        response.put("message", "Data saved successfully!");
-//        response.put("data", data);
-//
-//        return ResponseEntity.ok(response);
-//    }
 
 }

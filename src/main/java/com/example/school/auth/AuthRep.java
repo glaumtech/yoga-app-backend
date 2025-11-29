@@ -16,6 +16,6 @@ public interface AuthRep extends JpaRepository<User,Long> {
             "OR (:phoneNo IS NOT NULL AND r.phoneNo = :phoneNo)")
     Optional<User> findByEmailOrPhoneNo(@Param("email") String email, @Param("phoneNo") Long phoneNo);
 
-    //    Optional<Register> findByEmailOrPhoneNo(String email, Long mobile);
-    Optional<User> findByJuryId(Long id);
+
+
 }

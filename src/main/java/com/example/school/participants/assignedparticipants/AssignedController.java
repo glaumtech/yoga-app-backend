@@ -35,7 +35,9 @@ public class AssignedController {
 
                 response.put("status", "success");
                 response.put("message", "Participants assigned successfully!");
-                response.put("data", assigned);
+                Map<String, Object> user = new HashMap<>();
+                user.put("assigned",assigned);
+                response.put("data", user);
 
                 return ResponseEntity.ok(response);
             } catch (Exception e) {
@@ -58,6 +60,8 @@ public class AssignedController {
 
             response.put("status", "success");
             response.put("message", "Participants retrieved successfully!");
+
+
             response.put("data", data); // data from service
 
             return ResponseEntity.ok(response);

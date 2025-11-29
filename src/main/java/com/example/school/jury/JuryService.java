@@ -29,29 +29,7 @@ public class JuryService {
         if (juryRep.existsByNameIgnoreCaseAndDeletedFalse(request.getName())) {
             throw new RuntimeException("Judge with name '" + request.getName() + "' already exists!");
         }
-        Jury newUser = new Jury();
-
-        newUser.setName(request.getName());
-       // newUser.setUsername(request.getUsername());
-
-        // Set role
-//        if ("judge".equalsIgnoreCase(request.getRole())) {
-//
-//            Role userRole = roleRep.findByName("JUDGE")
-//                    .orElseThrow(() -> new RuntimeException("Role not found"));
-//
-//            newUser.setRole(userRole);
-//        }
-
-        newUser.setAddress(request.getAddress());
-        newUser.setDesignation(request.getDesignation());
-
-        Jury savedUser = juryRep.save(newUser);
-//        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-//        newUser.setConfirmPassword(request.getConfirmPassword());
-        // 5️⃣ Also save in Register table
         User registerUser = new User();
-        registerUser.setJuryId(savedUser.getId());  // link to Jury
         registerUser.setUsername(request.getUsername());
         registerUser.setPassword(passwordEncoder.encode(request.getPassword()));
         registerUser.setConfirmPassword(request.getConfirmPassword());
@@ -61,79 +39,137 @@ public class JuryService {
             Role userRole = roleRep.findByName("JUDGE")
                     .orElseThrow(() -> new RuntimeException("Role not found"));
             registerUser.setRole(userRole);    // store role name
-          //  newUser.setRole(userRole);
+            //  newUser.setRole(userRole);
         }
 
 
         //registerUser.setRole(userRole.getName());    // store role name
 
         authRep.save(registerUser);
+        User savedUser = authRep.save(registerUser);
+        Jury newUser = new Jury();
+        newUser.setName(request.getName());
+        newUser.setAddress(request.getAddress());
+        newUser.setDesignation(request.getDesignation());
+        newUser.setUserId(savedUser.getId());  // store only the id
+        Jury savedJury = juryRep.save(newUser);
+
        // return savedUser;
         return new ResponseDto(
                 savedUser.getId(),
-                savedUser.getName(),
+                savedJury.getName(),
                 registerUser.getUsername(),
                 registerUser.getRole().getName(),
-                savedUser.getAddress(),
-                savedUser.getDesignation(),
+                savedJury.getAddress(),
+                savedJury.getDesignation(),
                 registerUser.getRole().getId()
         );
        // return juryRep.save(newUser);
     }
 
-    public ResponseDto updateUser(RequestDto request, Long id) {
-        if (juryRep.existsByNameIgnoreCaseAndIdNotAndDeletedFalse(request.getName(), request.getId())) {
-            throw new RuntimeException("Another jury with this name already exists!");
-        }
-        Jury user = juryRep.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-
-        user.setAddress(request.getAddress());
-        user.setDesignation(request.getDesignation());
-        user.setName(request.getName());
-       // user.setUsername(request.getUsername());
-//        if(request.getPassword()!=null) {
-//
-//
-//            user.setPassword(passwordEncoder.encode(request.getPassword()));
-//            user.setConfirmPassword(request.getConfirmPassword());
+//    public ResponseDto updateUser(RequestDto request, Long id) {
+//        if (juryRep.existsByNameIgnoreCaseAndIdNotAndDeletedFalse(request.getName(), request.getId())) {
+//            throw new RuntimeException("Another jury with this name already exists!");
 //        }
-//        Role role = roleRep.findByName(request.getRole())
-//                .orElseThrow(() -> new RuntimeException("Role not found"));
+//        Jury user = juryRep.findById(id)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
 //
-//        user.setRole(role);
-        Jury updatedUser = juryRep.save(user);
-        User registerUser = authRep.findByJuryId(updatedUser.getId())
-                .orElseThrow(() -> new RuntimeException("Register entry not found"));
-
-        registerUser.setUsername(request.getUsername());
-        if (request.getPassword() != null) {
-                        registerUser.setPassword(passwordEncoder.encode(request.getPassword()));
-            registerUser.setConfirmPassword(request.getConfirmPassword());
-        }
-        registerUser.setEmail(request.getEmail());
-        if(request.getRole()!=null){
-            Role role = roleRep.findByName(request.getRole())
-                    .orElseThrow(() -> new RuntimeException("Role not found"));
-
-            registerUser.setRole(role);
-
-        }
-
-
-        authRep.save(registerUser);
-        return new ResponseDto(
-                updatedUser.getId(),
-                updatedUser.getName(),
-                registerUser.getUsername(),
-                registerUser.getRole().getName(),
-                updatedUser.getAddress(),
-                updatedUser.getDesignation(),
-                registerUser.getRole().getId()
-        );
-      //  return juryRep.save(user);
+//
+//        user.setAddress(request.getAddress());
+//        user.setDesignation(request.getDesignation());
+//        user.setName(request.getName());
+//       // user.setUsername(request.getUsername());
+////        if(request.getPassword()!=null) {
+////
+////
+////            user.setPassword(passwordEncoder.encode(request.getPassword()));
+////            user.setConfirmPassword(request.getConfirmPassword());
+////        }
+////        Role role = roleRep.findByName(request.getRole())
+////                .orElseThrow(() -> new RuntimeException("Role not found"));
+////
+////        user.setRole(role);
+//        Jury updatedUser = juryRep.save(user);
+//        User registerUser = authRep.findByJuryId(updatedUser.getId())
+//                .orElseThrow(() -> new RuntimeException("Register entry not found"));
+//
+//        registerUser.setUsername(request.getUsername());
+//        if (request.getPassword() != null) {
+//                        registerUser.setPassword(passwordEncoder.encode(request.getPassword()));
+//            registerUser.setConfirmPassword(request.getConfirmPassword());
+//        }
+//        registerUser.setEmail(request.getEmail());
+//        if(request.getRole()!=null){
+//            Role role = roleRep.findByName(request.getRole())
+//                    .orElseThrow(() -> new RuntimeException("Role not found"));
+//
+//            registerUser.setRole(role);
+//
+//        }
+//
+//
+//        authRep.save(registerUser);
+//        return new ResponseDto(
+//                updatedUser.getId(),
+//                updatedUser.getName(),
+//                registerUser.getUsername(),
+//                registerUser.getRole().getName(),
+//                updatedUser.getAddress(),
+//                updatedUser.getDesignation(),
+//                registerUser.getRole().getId()
+//        );
+//      //  return juryRep.save(user);
+//    }
+public ResponseDto updateUser(RequestDto request, Long juryId) {
+    // 1️⃣ Check if another jury with the same name exists
+    if (juryRep.existsByNameIgnoreCaseAndIdNotAndDeletedFalse(request.getName(), juryId)) {
+        throw new RuntimeException("Another jury with this name already exists!");
     }
+
+    // 2️⃣ Fetch the existing Jury
+    Jury jury = juryRep.findById(juryId)
+            .orElseThrow(() -> new RuntimeException("Jury not found"));
+
+    // 3️⃣ Update Jury details
+    jury.setName(request.getName());
+    jury.setAddress(request.getAddress());
+    jury.setDesignation(request.getDesignation());
+
+    Jury updatedJury = juryRep.save(jury);
+
+    // 4️⃣ Fetch the associated User using stored userId
+    User user = authRep.findById(updatedJury.getUserId())
+            .orElseThrow(() -> new RuntimeException("Associated User not found"));
+
+    // 5️⃣ Update User details
+    user.setUsername(request.getUsername());
+    user.setEmail(request.getEmail());
+
+    if (request.getPassword() != null && !request.getPassword().isBlank()) {
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setConfirmPassword(request.getConfirmPassword());
+    }
+
+    if (request.getRole() != null) {
+        Role role = roleRep.findByName(request.getRole())
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+        user.setRole(role);
+    }
+
+    authRep.save(user);
+
+    // 6️⃣ Return combined response
+    return new ResponseDto(
+            updatedJury.getId(),
+            updatedJury.getName(),
+            user.getUsername(),
+            user.getRole().getName(),
+            updatedJury.getAddress(),
+            updatedJury.getDesignation(),
+            user.getRole().getId()
+    );
+}
+
     public List<Jury> getAllJury() {
         return juryRep.findByDeletedFalseOrderByIdDesc(); // only accepted
     }

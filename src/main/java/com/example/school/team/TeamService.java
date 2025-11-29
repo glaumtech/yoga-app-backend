@@ -4,7 +4,7 @@ import com.example.school.event.Event;
 import com.example.school.event.EventRep;
 import com.example.school.jury.Jury;
 import com.example.school.jury.JuryDto;
-import com.example.school.jury.JuryRep;
+import com.example.school.jury.JuryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ public class TeamService {
         private TeamRepository teamRepo;
 
         @Autowired
-        private JuryRep juryRepo;
+        private JuryRepository juryRepo;
 
         @Autowired
         private EventRep eventRepo;

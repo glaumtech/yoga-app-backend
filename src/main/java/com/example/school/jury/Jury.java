@@ -24,5 +24,6 @@ public class  Jury {
     @ManyToMany(mappedBy = "juryList")
     @JsonBackReference
     private List<Team> teams;
+    private Long userId;
 
 }

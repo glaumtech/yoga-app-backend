@@ -18,7 +18,7 @@ public class User {
     private String confirmPassword;
 
     private Long phoneNo;
-    private Long juryId; // link to Jury
+
 
     @ManyToOne
     private Role role;

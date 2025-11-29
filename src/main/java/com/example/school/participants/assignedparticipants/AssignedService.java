@@ -2,10 +2,9 @@ package com.example.school.participants.assignedparticipants;
 
 import com.example.school.jury.Jury;
 import com.example.school.jury.JuryDto;
-import com.example.school.jury.JuryRep;
+import com.example.school.jury.JuryRepository;
 import com.example.school.participants.PageFilterRequest;
 import com.example.school.participants.ParticipantRep;
-import com.example.school.participants.ParticipantResponse;
 import com.example.school.participants.Participants;
 import com.example.school.team.Team;
 import com.example.school.team.TeamRepository;
@@ -29,7 +28,7 @@ public class AssignedService {
     @Autowired
     private ParticipantRep participantRep;
     @Autowired
-    private JuryRep juryRep;
+    private JuryRepository juryRep;
     @Autowired
     private TeamRepository teamRepository;
 
