@@ -163,11 +163,13 @@ public class ParticipantService {
 
         String participantValue = filter != null ? filter.getParticipant() : null;
         String groupValue = filter != null ? filter.getGroup() : null;
-
+        String statusFilter = filter != null && filter.getStatus() != null
+                ? filter.getStatus().toUpperCase()
+                : null;
         // Fetch participants based on other filters
         Page<Participants> participants = participantRep.findFilteredParticipants(
                 participantValue,
-                filter != null ? filter.getStatus() : null,
+                statusFilter,
                 filter != null ? filter.getCategory() : null,
                 groupValue,
                 eventId,

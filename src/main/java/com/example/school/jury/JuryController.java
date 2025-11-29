@@ -122,27 +122,40 @@ public class JuryController {
 //                    userMap.put("userName", null);
 //                    userMap.put("roleName", null);
 //                }
-                Optional<Jury> regOpt = juryRepository.findByUserId(e.getUserId());
-                if (regOpt.isPresent()) {
-                    Jury optionalJury = regOpt.get();   // get Jury object
+               // Optional<Jury> regOpt = juryRepository.findByUserId(e.getUserId());
+//                if (regOpt.isPresent()) {
+//                    Jury optionalJury = regOpt.get();   // get Jury object
 
-                    Optional<User> userOpt = authRep.findById(optionalJury.getUserId());
-                    if (userOpt.isPresent()) {
-                        User reg = userOpt.get(); // now this is the User
-                        userMap.put("userName", reg.getUsername());
-                        userMap.put("roleId", reg.getRole() != null ? reg.getRole().getId() : null);
-                        userMap.put("roleName", reg.getRole() != null ? reg.getRole().getName() : null);
-                    } else {
-                        userMap.put("userName", null);
-                        userMap.put("roleName", null);
-                        userMap.put("roleId", null);
-                    }
-
-                } else {
-                    userMap.put("userName", null);
-                    userMap.put("roleName", null);
-                    userMap.put("roleId", null);
+//                    Optional<User> userOpt = authRep.findById(optionalJury.getUserId());
+//                    if (userOpt.isPresent()) {
+//                        User reg = userOpt.get(); // now this is the User
+//                        userMap.put("userName", reg.getUsername());
+//                        userMap.put("roleId", reg.getRole() != null ? reg.getRole().getId() : null);
+//                        userMap.put("roleName", reg.getRole() != null ? reg.getRole().getName() : null);
+//                    } else {
+//                        userMap.put("userName", null);
+//                        userMap.put("roleName", null);
+//                        userMap.put("roleId", null);
+//                    }
+                List<Jury> regList = new ArrayList<>();
+                if (e.getUserId() != null) {
+                    regList = juryRepository.findAllByUserId(e.getUserId());
                 }
+
+                regList.stream().findFirst().ifPresent(juryItem -> {
+                        authRep.findById(juryItem.getUserId()).ifPresent(user -> {
+                            userMap.put("userName", user.getUsername());
+                            userMap.put("roleId", user.getRole() != null ? user.getRole().getId() : null);
+                            userMap.put("roleName", user.getRole() != null ? user.getRole().getName() : null);
+                        });
+                    });
+
+
+//                } else {
+//                    userMap.put("userName", null);
+//                    userMap.put("roleName", null);
+//                    userMap.put("roleId", null);
+//                }
 
 
                 users.add(userMap);

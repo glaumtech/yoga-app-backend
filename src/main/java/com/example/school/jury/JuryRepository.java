@@ -11,5 +11,6 @@ public interface JuryRepository extends JpaRepository<Jury,Long> {
 
     boolean existsByNameIgnoreCaseAndDeletedFalse(String name);
     Optional<Jury> findByUserId(Long id);
+    List<Jury> findAllByUserId(Long id);
     boolean existsByNameIgnoreCaseAndIdNotAndDeletedFalse(String name, Long id);
 }
