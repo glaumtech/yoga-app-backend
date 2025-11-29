@@ -223,10 +223,13 @@ public class JuryController {
                 response.put("data", null);
                 return ResponseEntity.status(404).body(response);
             }
-
+            Map<String, Object> jury = new HashMap<>();
             // Jury found → return only juryId
-            data.put("juryId", juryOptional.get().getId());
-
+            jury.put("id", juryOptional.get().getId());
+            jury.put("name",juryOptional.get().getName());
+            jury.put("designation",juryOptional.get().getDesignation());
+            jury.put("address",juryOptional.get().getAddress());
+            data.put("jury",jury);
             response.put("status", "success");
             response.put("message", "Jury found");
             response.put("data", data);
