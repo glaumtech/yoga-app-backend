@@ -68,7 +68,7 @@ public class AssignedController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("status", "error");
-            response.put("message", "Failed to retrieve participants: " + e.getMessage());
+            response.put("message",  e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
@@ -84,10 +84,6 @@ public class AssignedController {
 
         try {
             Map<String, Object> data = assignmentService.getParticipantsForJury(eventId, juryId);
-
-
-
-
             response.put("status", "success");
             response.put("message", "Assigned Participants fetched successfully");
             response.put("data", data);

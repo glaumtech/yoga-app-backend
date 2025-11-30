@@ -88,4 +88,9 @@ List<AssignedParticipant> findAllByEventIdAndCategory(
     List<AssignedParticipant> findAllByAssignedGroupIdInAndJuryId(List<Long> groupIds, Long juryId);
 
 
+    List<AssignedParticipant> findAllByAssignedGroupIdInAndIsScoredFalse(List<Long> groupIds);
+
+    List<AssignedParticipant> findAllByAssignedGroupIdInAndJuryIdAndIsScoredFalse(List<Long> groupIds, Long juryId);
+
+    List<AssignedParticipant> findAllByAssignedGroupIdAndJuryId(Long assignId, Long juryId);
 }

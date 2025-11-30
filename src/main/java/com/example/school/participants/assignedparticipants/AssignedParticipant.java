@@ -22,6 +22,7 @@ private Long assignedGroupId;
     private Long participantId;
 
     private Long juryId;
+    private boolean isScored=false;
 
     private String category; // Can be common/special per participant if needed
 

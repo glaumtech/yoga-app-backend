@@ -24,7 +24,7 @@ public class Scoring {
     private Integer grandTotal;
     private Long juryId;
     private Long participantId;
-
+    private String category;
     @Column(name = "deleted")
     private Boolean deleted = false;
 }

@@ -46,7 +46,7 @@ public class ScoringController {
             Map<String, Object> response = new HashMap<>();
             try {
                 // Retrieve scores from service
-                List<Map<String, Object>> participantsScores = scoringService.getScoresByEvent(eventId);
+                Map<String, Object> participantsScores = scoringService.getGroupedParticipantScores(eventId);
 
                 response.put("status", "success");
                 response.put("message", "Scores retrieved successfully!");

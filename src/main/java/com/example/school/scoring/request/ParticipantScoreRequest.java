@@ -10,6 +10,7 @@ import java.util.List;
 public class ParticipantScoreRequest {
     private Long participantId;
     private Long assignId;
+    private String category;
     private Integer grandTotal;   // Added
     private Long juryId; // optional
     private List<AsanaScoreRequest> asanas;

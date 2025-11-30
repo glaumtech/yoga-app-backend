@@ -14,8 +14,8 @@ public interface AssignedGroupRepository extends JpaRepository<AssignedGroup, Lo
     List<AssignedGroup> findAllByEventId(Long eventId);
 
     Page<AssignedGroup> findAllByEventId(Long eventId, Pageable pageable);
-    List<AssignedGroup> findAllByEventIdAndIsScoredFalse(Long eventId);
-
-    Page<AssignedGroup> findAllByEventIdAndIsScoredFalse(Long eventId, Pageable pageable);
+//    List<AssignedGroup> findAllByEventIdAndIsScoredFalse(Long eventId);
+//
+//    Page<AssignedGroup> findAllByEventIdAndIsScoredFalse(Long eventId, Pageable pageable);
 }
 
