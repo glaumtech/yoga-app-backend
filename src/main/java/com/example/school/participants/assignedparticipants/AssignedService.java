@@ -138,56 +138,56 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
 
 }
     public Map<String, Object> getParticipantsAndJuriesByEvent(Long eventId, PageFilterRequest request) {
+
         Pageable pageable = request.toPageable();
 
-        // 1️⃣ Fetch assigned groups (paginated)
-        Page<AssignedGroup> assignedGroupsPage = assignedGroupRepo.findAllByEventId(eventId, pageable);
-        List<Long> groupIds = assignedGroupsPage.stream().map(AssignedGroup::getId).toList();
+        // 1️⃣ Fetch ONLY unscored assigned groups
+        Page<AssignedGroup> assignedGroupsPage =
+                assignedGroupRepo.findAllByEventIdAndIsScoredFalse(eventId, pageable);
 
-        // 2️⃣ Fetch all assigned participants for these groups
-        List<AssignedParticipant> assignedParticipants = assignedRepo.findAllByAssignedGroupIdIn(groupIds);
-
-        // 3️⃣ Fetch participants who already have scores
-        Set<Long> scoredParticipantIds = scoringRepo.findByEventId(eventId)
-                .stream()
-                .map(Scoring::getParticipantId)
-                .collect(Collectors.toSet());
-
-        // 4️⃣ Exclude participants who already have scores
-        List<AssignedParticipant> unscoredParticipants = assignedParticipants.stream()
-                .filter(ap -> !scoredParticipantIds.contains(ap.getParticipantId()))
+        List<Long> groupIds = assignedGroupsPage.stream()
+                .map(AssignedGroup::getId)
                 .toList();
 
-        // 5️⃣ Fetch all participants and map by ID
-        Set<Long> participantIds = unscoredParticipants.stream()
+        // 2️⃣ Fetch all participants belonging to these unscored groups
+        List<AssignedParticipant> assignedParticipants =
+                assignedRepo.findAllByAssignedGroupIdIn(groupIds);
+
+        // 3️⃣ Fetch participants info
+        Set<Long> participantIds = assignedParticipants.stream()
                 .map(AssignedParticipant::getParticipantId)
                 .collect(Collectors.toSet());
+
         Map<Long, Participants> participantMap = participantRep.findAllById(participantIds)
                 .stream().collect(Collectors.toMap(Participants::getId, p -> p));
 
-        // 6️⃣ Fetch all juries and map by ID
-        Set<Long> juryIds = unscoredParticipants.stream()
+        // 4️⃣ Fetch jury details
+        Set<Long> juryIds = assignedParticipants.stream()
                 .map(AssignedParticipant::getJuryId)
                 .collect(Collectors.toSet());
+
         Map<Long, Jury> juryMap = juryRep.findAllById(juryIds)
                 .stream().collect(Collectors.toMap(Jury::getId, j -> j));
 
-        String category = unscoredParticipants.stream()
+        // 5️⃣ Fetch category (optional)
+        String category = assignedParticipants.stream()
                 .map(AssignedParticipant::getCategory)
                 .findFirst()
                 .orElse(null);
 
-        // 7️⃣ Build response per group
+        // 6️⃣ Build group response
         List<Map<String, Object>> groupResponses = assignedGroupsPage.stream().map(group -> {
             Map<String, Object> groupData = new LinkedHashMap<>();
+
             groupData.put("assignedId", group.getId());
             groupData.put("teamId", group.getTeamId());
+
             Team team = teamRepository.findById(group.getTeamId()).orElse(null);
             groupData.put("teamName", team != null ? team.getName() : null);
             groupData.put("category", category);
 
-            // Participants for this group (distinct by participantId + category)
-            List<ParticipantsDto> participants = unscoredParticipants.stream()
+            // Participants under this group
+            List<ParticipantsDto> participants = assignedParticipants.stream()
                     .filter(ap -> ap.getAssignedGroupId().equals(group.getId()))
                     .collect(Collectors.groupingBy(ap -> ap.getParticipantId() + "_" + ap.getCategory()))
                     .values().stream()
@@ -202,22 +202,24 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
                         );
                     })
                     .toList();
+
             groupData.put("participants", participants);
 
             // Juries for this group
-            List<JuryDto> juries = unscoredParticipants.stream()
+            List<JuryDto> juries = assignedParticipants.stream()
                     .filter(ap -> ap.getAssignedGroupId().equals(group.getId()))
                     .map(AssignedParticipant::getJuryId)
                     .distinct()
                     .map(juryMap::get)
                     .map(j -> new JuryDto(j.getId(), j.getName()))
                     .toList();
+
             groupData.put("juries", juries);
 
             return groupData;
         }).toList();
 
-        // 8️⃣ Prepare final response
+        // 7️⃣ Final response
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("groups", groupResponses);
         data.put("currentPage", assignedGroupsPage.getNumber());
@@ -314,31 +316,112 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
 
 
 
+//
+//    public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
+//        // 1️⃣ Fetch all assigned groups for the event
+//        if (juryId == null) {
+//            throw new RuntimeException("Jury ID is required to fetch participants for this event.");
+//        }
+//        List<AssignedGroup> assignedGroups = assignedGroupRepo.findAllByEventId(eventId);
+//
+//        // 2️⃣ Extract all group IDs to fetch participants
+//        List<Long> groupIds = assignedGroups.stream().map(AssignedGroup::getId).toList();
+//        List<AssignedParticipant> assignedParticipants =
+//                assignedRepo.findAllByAssignedGroupIdInAndJuryId(groupIds, juryId);
+//        if (assignedParticipants.isEmpty()) {
+//            throw new RuntimeException("No participants assigned for eventId=" + eventId + " and juryId=" + juryId);
+//        }
+//
+//        // 4️⃣ Fetch participant and jury details
+//        Set<Long> participantIds = assignedParticipants.stream()
+//                .map(AssignedParticipant::getParticipantId)
+//                .collect(Collectors.toSet());
+//        Set<Long> juryIds = assignedParticipants.stream()
+//                .map(AssignedParticipant::getJuryId)
+//                .collect(Collectors.toSet());
+//
+//        Map<Long, Participants> participantMap = participantRep.findAllById(participantIds)
+//                .stream().collect(Collectors.toMap(Participants::getId, p -> p));
+//        Map<Long, Jury> juryMap = juryRep.findAllById(juryIds)
+//                .stream().collect(Collectors.toMap(Jury::getId, j -> j));
+//
+//        // 5️⃣ Group participants by assignedGroupId
+//        Map<Long, List<AssignedParticipant>> participantsByGroup = assignedParticipants.stream()
+//                .collect(Collectors.groupingBy(AssignedParticipant::getAssignedGroupId));
+//
+//        // 6️⃣ Build groups list
+//        List<Map<String, Object>> groups = new ArrayList<>();
+//        for (AssignedGroup group : assignedGroups) {
+//            Map<String, Object> groupData = new LinkedHashMap<>();
+//            groupData.put("assignedId", group.getId());
+//            groupData.put("teamId", group.getTeamId());
+//            groupData.put("teamName", "Team " + group.getTeamId()); // replace with actual name if available
+//
+//            // Category (from first participant in the group)
+//            List<AssignedParticipant> groupParticipants = participantsByGroup.getOrDefault(group.getId(), List.of());
+//            String groupCategory = groupParticipants.isEmpty() ? null : groupParticipants.get(0).getCategory();
+//            groupData.put("category", groupCategory);
+//
+//            // Participants for this group (distinct by participant ID)
+//            List<ParticipantsDto> participantResponses = groupParticipants.stream()
+//                    .map(ap -> participantMap.get(ap.getParticipantId()))
+//                    .filter(Objects::nonNull)
+//                    .distinct() // remove duplicates
+//                    .map(p -> new ParticipantsDto(
+//                            p.getId(),
+//                            p.getParticipantName(),
+//                            p.getGroupName(),
+//                            p.getSchoolName()
+//                    ))
+//                    .toList();
+//            groupData.put("participants", participantResponses);
+//
+//            // Juries for this group (distinct)
+//            List<JuryDto> juryResponses = groupParticipants.stream()
+//                    .map(ap -> juryMap.get(ap.getJuryId()))
+//                    .filter(Objects::nonNull)
+//                    .distinct()
+//                    .map(j -> new JuryDto(j.getId(), j.getName()))
+//                    .toList();
+//            groupData.put("juries", juryResponses);
+//
+//            groups.add(groupData);
+//        }
+//
+//        // 7️⃣ Return response
+//        Map<String, Object> data = new LinkedHashMap<>();
+//        data.put("groups", groups);
+//
+//
+//
+//        return data;
+//    }
 
     public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
-        // 1️⃣ Fetch all assigned groups for the event
         if (juryId == null) {
             throw new RuntimeException("Jury ID is required to fetch participants for this event.");
         }
-        List<AssignedGroup> assignedGroups = assignedGroupRepo.findAllByEventId(eventId);
 
-        // 2️⃣ Extract all group IDs to fetch participants
+
+// 1️⃣ Fetch ONLY unscored assigned groups
+        List<AssignedGroup> assignedGroups = assignedGroupRepo.findAllByEventIdAndIsScoredFalse(eventId);
+
+        if (assignedGroups.isEmpty()) {
+            throw new RuntimeException("No unscored groups found for eventId=" + eventId);
+        }
+
+// 2️⃣ Extract group IDs
         List<Long> groupIds = assignedGroups.stream().map(AssignedGroup::getId).toList();
 
-        // 3️⃣ Fetch assigned participants filtered by juryId if provided
-//        List<AssignedParticipant> assignedParticipants;
-//        if (juryId != null) {
-//            assignedParticipants = assignedRepo.findAllByAssignedGroupIdInAndJuryId(groupIds, juryId);
-//        } else {
-//            assignedParticipants = assignedRepo.findAllByAssignedGroupIdIn(groupIds);
-//        }
+// 3️⃣ Fetch participants assigned to this jury in these unscored groups
         List<AssignedParticipant> assignedParticipants =
                 assignedRepo.findAllByAssignedGroupIdInAndJuryId(groupIds, juryId);
+
         if (assignedParticipants.isEmpty()) {
             throw new RuntimeException("No participants assigned for eventId=" + eventId + " and juryId=" + juryId);
         }
 
-        // 4️⃣ Fetch participant and jury details
+// 4️⃣ Fetch participant and jury details
         Set<Long> participantIds = assignedParticipants.stream()
                 .map(AssignedParticipant::getParticipantId)
                 .collect(Collectors.toSet());
@@ -351,17 +434,18 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
         Map<Long, Jury> juryMap = juryRep.findAllById(juryIds)
                 .stream().collect(Collectors.toMap(Jury::getId, j -> j));
 
-        // 5️⃣ Group participants by assignedGroupId
+// 5️⃣ Group participants by assignedGroupId
         Map<Long, List<AssignedParticipant>> participantsByGroup = assignedParticipants.stream()
                 .collect(Collectors.groupingBy(AssignedParticipant::getAssignedGroupId));
 
-        // 6️⃣ Build groups list
+// 6️⃣ Build groups list
         List<Map<String, Object>> groups = new ArrayList<>();
         for (AssignedGroup group : assignedGroups) {
             Map<String, Object> groupData = new LinkedHashMap<>();
             groupData.put("assignedId", group.getId());
             groupData.put("teamId", group.getTeamId());
-            groupData.put("teamName", "Team " + group.getTeamId()); // replace with actual name if available
+            Team team = teamRepository.findById(group.getTeamId()).orElse(null);
+            groupData.put("teamName", team != null ? team.getName() : null);
 
             // Category (from first participant in the group)
             List<AssignedParticipant> groupParticipants = participantsByGroup.getOrDefault(group.getId(), List.of());
@@ -372,7 +456,7 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
             List<ParticipantsDto> participantResponses = groupParticipants.stream()
                     .map(ap -> participantMap.get(ap.getParticipantId()))
                     .filter(Objects::nonNull)
-                    .distinct() // remove duplicates
+                    .distinct()
                     .map(p -> new ParticipantsDto(
                             p.getId(),
                             p.getParticipantName(),
@@ -394,15 +478,14 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
             groups.add(groupData);
         }
 
-        // 7️⃣ Return response
+// 7️⃣ Return response
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("groups", groups);
 
-
-
         return data;
-    }
 
+
+    }
 
 //
 //    public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {

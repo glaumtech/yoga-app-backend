@@ -2,6 +2,8 @@ package com.example.school.scoring;
 
 import com.example.school.jury.JuryRepository;
 import com.example.school.participants.ParticipantRep;
+import com.example.school.participants.assignedparticipants.AssignedGroup;
+import com.example.school.participants.assignedparticipants.AssignedGroupRepository;
 import com.example.school.scoring.entity.ParticipantAsana;
 import com.example.school.scoring.entity.Scoring;
 import com.example.school.scoring.request.AsanaScoreRequest;
@@ -27,6 +29,8 @@ public class ScoringService {
 
     @Autowired
     private JuryRepository juryRepository;
+    @Autowired
+    private AssignedGroupRepository assignedGroupRepository;
 
 
     @Autowired
@@ -60,7 +64,9 @@ public class ScoringService {
 
             scoring.setJuryId(p.getJuryId());
             scoring = participantEventRepo.save(scoring);
-
+            AssignedGroup assignedParticipant = assignedGroupRepository.findById(p.getAssignId()) .orElseThrow(() -> new RuntimeException("Assigned ID " + p.getAssignId() + " not found"));
+            assignedParticipant.setScored(true);
+            assignedGroupRepository.save(assignedParticipant);
             Map<String, Double> asanaTotalsMap = new HashMap<>();
 
             // Save Asanas

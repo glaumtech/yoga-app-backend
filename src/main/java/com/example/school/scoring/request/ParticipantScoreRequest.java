@@ -9,6 +9,7 @@ import java.util.List;
 @Setter
 public class ParticipantScoreRequest {
     private Long participantId;
+    private Long assignId;
     private Integer grandTotal;   // Added
     private Long juryId; // optional
     private List<AsanaScoreRequest> asanas;

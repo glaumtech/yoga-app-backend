@@ -10,5 +10,6 @@ import java.util.List;
 @Setter
 public class ScoreRequest {
     private Long eventId;
+
     private List<ParticipantScoreRequest> scoreOfParticipants;
 }

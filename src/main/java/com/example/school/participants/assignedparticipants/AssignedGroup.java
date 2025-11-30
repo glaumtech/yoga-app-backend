@@ -19,5 +19,7 @@ public class AssignedGroup {
 
     private Long teamId;
 
+    private boolean isScored=false;
+
 
 }

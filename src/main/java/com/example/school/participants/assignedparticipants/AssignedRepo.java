@@ -86,4 +86,6 @@ List<AssignedParticipant> findAllByEventIdAndCategory(
     List<AssignedParticipant> findAllByAssignedGroupIdIn(List<Long> groupIds);
 
     List<AssignedParticipant> findAllByAssignedGroupIdInAndJuryId(List<Long> groupIds, Long juryId);
+
+
 }

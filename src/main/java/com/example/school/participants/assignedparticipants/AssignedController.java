@@ -64,6 +64,7 @@ public class AssignedController {
 
             response.put("data", data); // data from service
 
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("status", "error");
@@ -79,6 +80,7 @@ public class AssignedController {
             @RequestParam(required = false) Long juryId  // optional
     ) {
         Map<String, Object> response = new HashMap<>();
+
 
         try {
             Map<String, Object> data = assignmentService.getParticipantsForJury(eventId, juryId);
