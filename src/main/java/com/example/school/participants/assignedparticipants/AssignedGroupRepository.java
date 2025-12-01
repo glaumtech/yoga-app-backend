@@ -10,12 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface AssignedGroupRepository extends JpaRepository<AssignedGroup, Long> {
-    Optional<AssignedGroup> findByEventIdAndTeamId(Long eventId, Long teamId);
-    List<AssignedGroup> findAllByEventId(Long eventId);
+       List<AssignedGroup> findAllByEventId(Long eventId);
 
     Page<AssignedGroup> findAllByEventId(Long eventId, Pageable pageable);
-//    List<AssignedGroup> findAllByEventIdAndIsScoredFalse(Long eventId);
-//
-//    Page<AssignedGroup> findAllByEventIdAndIsScoredFalse(Long eventId, Pageable pageable);
+
 }
 

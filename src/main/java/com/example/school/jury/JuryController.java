@@ -29,15 +29,7 @@ public class JuryController {
             // Call service to save user
             ResponseDto savedUser = juryService.saveUser(request);
 
-            // Build response map
-//            Map<String, Object> user = new HashMap<>();
 
-//            user.put("username", savedUser.getUsername());
-//            user.put("address", savedUser.getAddress());
-//            user.put("designation",savedUser.getDesignation());
-//            user.put("roleId", savedUser.getRole() != null ? savedUser.getRole().getId() : null);
-//            user.put("roleName", savedUser.getRole() != null ? savedUser.getRole().getName() : null);
-//            user.put("id", savedUser.getId());
 
             Map<String, Object> data = new HashMap<>();
             data.put("user", savedUser);
@@ -68,14 +60,6 @@ public class JuryController {
             // Call service to update user
             ResponseDto updatedUser = juryService.updateUser(request, id);
 
-            // Build response map
-//            Map<String, Object> user = new HashMap<>();
-//            user.put("id", updatedUser.getId());
-//            user.put("userName", updatedUser.getUsername());
-//            user.put("address", updatedUser.getAddress());
-//            user.put("designation", updatedUser.getDesignation());
-//            user.put("roleId", updatedUser.getRole() != null ? updatedUser.getRole().getId() : null);
-//            user.put("roleName", updatedUser.getRole() != null ? updatedUser.getRole().getName() : null);
 
             Map<String, Object> data = new HashMap<>();
             data.put("user", updatedUser);
@@ -107,36 +91,7 @@ public class JuryController {
 //                userMap.put("userName", e.getUsername());
                 userMap.put("address", e.getAddress());
                 userMap.put("designation", e.getDesignation());
-//                userMap.put("roleId", e.getRole() != null ? e.getRole().getId() : null);
-//                userMap.put("roleName", e.getRole() != null ? e.getRole().getName() : null);
-                // Fetch from Register
-//                Optional<Jury> regOpt = juryRepository.findByUserId(e.getUserId());
-//                if (regOpt.isPresent()) {
-//                    Jury jury = regOpt.get();   // get Jury object
-//                    userMap.put("userName", reg.getUsername());
-//
-//                    userMap.put("roleId", reg.getRole() != null ? reg.getRole().getId() : null);
-//                    userMap.put("roleName", reg.getRole() != null ? reg.getRole().getName() : null);
-//
-//                } else {
-//                    userMap.put("userName", null);
-//                    userMap.put("roleName", null);
-//                }
-               // Optional<Jury> regOpt = juryRepository.findByUserId(e.getUserId());
-//                if (regOpt.isPresent()) {
-//                    Jury optionalJury = regOpt.get();   // get Jury object
 
-//                    Optional<User> userOpt = authRep.findById(optionalJury.getUserId());
-//                    if (userOpt.isPresent()) {
-//                        User reg = userOpt.get(); // now this is the User
-//                        userMap.put("userName", reg.getUsername());
-//                        userMap.put("roleId", reg.getRole() != null ? reg.getRole().getId() : null);
-//                        userMap.put("roleName", reg.getRole() != null ? reg.getRole().getName() : null);
-//                    } else {
-//                        userMap.put("userName", null);
-//                        userMap.put("roleName", null);
-//                        userMap.put("roleId", null);
-//                    }
                 List<Jury> regList = new ArrayList<>();
                 if (e.getUserId() != null) {
                     regList = juryRepository.findAllByUserId(e.getUserId());
@@ -151,11 +106,6 @@ public class JuryController {
                     });
 
 
-//                } else {
-//                    userMap.put("userName", null);
-//                    userMap.put("roleName", null);
-//                    userMap.put("roleId", null);
-//                }
 
 
                 users.add(userMap);

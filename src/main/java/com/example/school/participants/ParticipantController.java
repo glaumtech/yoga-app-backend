@@ -28,44 +28,7 @@ public class ParticipantController {
     private ParticipantService participantService;
     @Autowired
     private ParticipantRep participantRep;
-//    @PostMapping("/register")
-//    public ResponseEntity<Map<String, String>> submitData(@RequestPart("data") String data,
-//
-//                                                          @RequestPart(value = "photo", required = false) MultipartFile photo) {
-//
-//        try {
-//          //  participantService.save(data, photo);
-//            Participants newUser = participantService.save(data, photo);
-//            Map<String, Object> datas = new HashMap<>();
-//            Map<String, Object> userMap = new HashMap<>();
-//            userMap.put("id", newUser.getId());
-//            userMap.put("participantName",newUser.getParticipantName());
-//            userMap.put("dateOfBirth",newUser.getDateOfBirth());
-//            userMap.put("age",newUser.getAge());
-//            userMap.put("gender",newUser.getGender());
-//            userMap.put("category",newUser.getCategory());
-//            userMap.put("schoolName",newUser.getSchoolName());
-//            userMap.put("standard",newUser.getStandard());
-//            userMap.put("yogaMasterName",newUser.getYogaMasterName());
-//            userMap.put("yogaMasterContact", newUser.getYogaMasterContact());
-//            userMap.put("address",newUser.getAddress());
-//            user.put("id",newUser.getId());
-//            data.put("user",user);
-//
-//            // Build response
-//            response.put("status", "success");
-//            response.put("message", "Data saved successfully!");
-//            response.put("data", data);
-//
-//            return ResponseEntity.ok(response);
-//            //return ResponseEntity.ok(Collections.singletonMap("message", "Data saved successfully!"));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResponseEntity.badRequest().body(Collections.singletonMap("message", "Error saving data!"));
-//        }
-//
-//    }
+
 @PostMapping("/{eventId}/register")
 public ResponseEntity<Map<String, Object>> submitData(
         @RequestPart("data") String data, // JSON string
@@ -352,49 +315,6 @@ public ResponseEntity<Map<String, Object>> submitData(
         }
     }
 
-//        @GetMapping("/list")
-//    public ResponseEntity<Map<String, Object>> getAllParticipants() {
-//        Map<String, Object> response = new HashMap<>();
-//
-//        try {
-//            List<Participants> participantsList = participantService.getAllParticipants();
-//
-//            List<Map<String, Object>> users = new ArrayList<>();
-//            for (Participants p : participantsList) {
-//                Map<String, Object> userMap = new HashMap<>();
-//                userMap.put("id", p.getId());
-//                userMap.put("participantName", p.getParticipantName());
-//                userMap.put("dateOfBirth", p.getDateOfBirth());
-//                userMap.put("age", p.getAge());
-//                userMap.put("gender", p.getGender());
-//                userMap.put("category", p.getCategory());
-//                userMap.put("schoolName", p.getSchoolName());
-//                userMap.put("standard", p.getStandard());
-//                userMap.put("yogaMasterName", p.getYogaMasterName());
-//                userMap.put("yogaMasterContact", p.getYogaMasterContact());
-//                userMap.put("address", p.getAddress());
-//                userMap.put("photo", p.getPhoto());
-//                userMap.put("status",p.getStatus());
-//
-//                users.add(userMap);
-//            }
-//
-//            Map<String, Object> dataMap = new HashMap<>();
-//            dataMap.put("users", users); // list of all participants
-//
-//            response.put("status", "success");
-//            response.put("message", "Participants retrieved successfully!");
-//            response.put("data", dataMap);
-//
-//            return ResponseEntity.ok(response);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            response.put("status", "error");
-//            response.put("message", "Error retrieving participants!");
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//    }
 
 
 }

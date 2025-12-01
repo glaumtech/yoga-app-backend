@@ -10,8 +10,7 @@ import java.util.Optional;
 @Repository
 public interface AuthRep extends JpaRepository<User,Long> {
     Optional<User> findByEmail(String email);
-    Optional<User> findByUsername(String name);
-    @Query("SELECT r FROM User r " +
+      @Query("SELECT r FROM User r " +
             "WHERE r.email = :email " +
             "OR (:phoneNo IS NOT NULL AND r.phoneNo = :phoneNo)")
     Optional<User> findByEmailOrPhoneNo(@Param("email") String email, @Param("phoneNo") Long phoneNo);

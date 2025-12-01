@@ -12,51 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface ParticipantRep extends JpaRepository<Participants,Long> {
-    List<Participants> findByStatus(String status);
-
-
-    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected'")
-    Page<Participants> findAllExcludingStatus(Pageable pageable);
-
-    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%'))")
-    Page<Participants> findByNameExcludingStatus(@Param("name") String name, Pageable pageable);
-
-    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND p.status = :status")
-    Page<Participants> findByStatusExcludingRejected(@Param("status") String status, Pageable pageable);
-
-    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%')) AND p.status = :status")
-    Page<Participants> findByNameAndStatusExcludingRejected(@Param("name") String name, @Param("status") String status, Pageable pageable);
 
     Optional<Participants> findTopByOrderByIdDesc();
 
-    /// /////////
-//    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected'  AND p.eventId = :eventId")
-//    Page<Participants> findAllExcludingStatusByEvent(@Param("eventId")Long eventId,Pageable pageable);
-//    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND p.status = :status AND p.eventId = :eventId")
-//    Page<Participants> findByStatusExcludingRejectedByEvent(@Param("status") String status,@Param("eventId")Long eventId, Pageable pageable);
-//
-//    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND  p.eventId = :eventId AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%'))")
-//    Page<Participants> findByNameExcludingStatusByEvent(@Param("name") String name,@Param("eventId")Long eventId, Pageable pageable);
-//
-//
-//    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%')) AND p.status = :status AND p.eventId = :eventId")
-//    Page<Participants> findByNameAndStatusExcludingRejectedByEvent(@Param("name") String name, @Param("status") String status,@Param("eventId")Long eventId, Pageable pageable);
-//    // All participants in an event with category
-//    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND p.eventId = :eventId AND p.category = :category")
-//    Page<Participants> findAllExcludingStatusByEventAndCategory(@Param("eventId") Long eventId, @Param("category") String category, Pageable pageable);
-//
-//    // Filter by status + category
-//    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND p.status = :status AND p.eventId = :eventId AND p.category = :category")
-//    Page<Participants> findByStatusExcludingRejectedByEventAndCategory(@Param("status") String status, @Param("eventId") Long eventId, @Param("category") String category, Pageable pageable);
-//
-//    // Filter by name + category
-//    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%')) AND p.eventId = :eventId AND p.category = :category")
-//    Page<Participants> findByNameExcludingStatusByEventAndCategory(@Param("name") String name, @Param("eventId") Long eventId, @Param("category") String category, Pageable pageable);
-//
-//    // Filter by name + status + category
-//    @Query("SELECT p FROM Participants p WHERE p.deleted = false AND p.status <> 'Rejected' AND LOWER(p.participantName) LIKE LOWER(CONCAT('%', :name, '%')) AND p.status = :status AND p.eventId = :eventId AND p.category = :category")
-//    Page<Participants> findByNameAndStatusExcludingRejectedByEventAndCategory(@Param("name") String name, @Param("status") String status, @Param("eventId") Long eventId, @Param("category") String category, Pageable pageable);
-    @Query("""
+       @Query("""
     SELECT p FROM Participants p
     WHERE p.deleted = false
       AND (:status = 'Rejected' OR p.status <> 'Rejected')

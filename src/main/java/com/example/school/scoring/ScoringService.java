@@ -1,5 +1,6 @@
 package com.example.school.scoring;
 
+import com.example.school.jury.Jury;
 import com.example.school.jury.JuryRepository;
 import com.example.school.participants.ParticipantRep;
 import com.example.school.participants.Participants;
@@ -453,7 +454,10 @@ public Map<String, Object> getScoresByEventAndParticipant(Long eventId, Long par
 // Fetch all ParticipantAsana for these scorings
     List<Long> scoringIds = scorings.stream().map(Scoring::getId).toList();
     List<ParticipantAsana> asanas = participantAsanaRepo.findAllByScoringIdIn(scoringIds);
-
+    Set<Long> juryIds = scorings.stream().map(Scoring::getJuryId).collect(Collectors.toSet());
+    List<Jury> juries = juryRepository.findAllById(juryIds);
+    Map<Long, String> juryMap = juries.stream()
+            .collect(Collectors.toMap(Jury::getId, Jury::getName));
 // Group scorings by category
     Map<String, List<Scoring>> scoringsByCategory = scorings.stream()
             .collect(Collectors.groupingBy(s -> s.getCategory() != null ? s.getCategory() : "Uncategorized"));
@@ -476,10 +480,12 @@ public Map<String, Object> getScoresByEventAndParticipant(Long eventId, Long par
                 String asanaName = a.getAsanaName() != null ? a.getAsanaName() : "Unnamed Asana";
                 double score = Double.parseDouble(a.getScore());
                 categoryGrandTotal += score;
-
+                Long juryId = s.getJuryId();
+                String juryName = juryMap.get(juryId); // get jury name
                 asanasMap.computeIfAbsent(asanaName, k -> new ArrayList<>())
                         .add(Map.of(
                                 "juryId", s.getJuryId(),
+                                "juryName", juryName,
                                 "score", score
                         ));
             }

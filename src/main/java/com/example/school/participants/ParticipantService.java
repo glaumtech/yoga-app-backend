@@ -51,8 +51,6 @@ public class ParticipantService {
     private AssignedRepo assignedRepo;
 
 
-    //    public ResponseEntity<Map<String, String>> save(String data, MultipartFile photo)
-//            throws IOException {
     public Participants save(RequestDto data, MultipartFile photo, Long eventId) throws IOException {
         ObjectMapper mapper = new ObjectMapper(); // it from jackson library in spirng boot to handle jso
         // Json to javaObject
