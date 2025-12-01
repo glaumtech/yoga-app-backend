@@ -8,7 +8,8 @@ import java.util.List;
 
 @Repository
 public interface TeamRepository extends JpaRepository<Team,Long> {
-    boolean existsByNameIgnoreCaseAndDeletedFalse(String name);
+//    boolean existsByNameIgnoreCaseAndDeletedFalse(String name);
+boolean existsByNameIgnoreCaseAndEventIdAndDeletedFalse(String name, Long eventId);
 
     boolean existsByNameIgnoreCaseAndIdNotAndDeletedFalse(String name, Long id);
 

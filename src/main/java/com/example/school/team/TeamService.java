@@ -25,7 +25,7 @@ public class TeamService {
         private EventRep eventRepo;
 
         public Team createTeam(TeamRequestDto request) {
-            if (teamRepo.existsByNameIgnoreCaseAndDeletedFalse(request.getName())) {
+            if (teamRepo.existsByNameIgnoreCaseAndEventIdAndDeletedFalse(request.getName(), request.getEventId())) {
                 throw new RuntimeException("Team with name '" + request.getName() + "' already exists!");
             }
             Team team = new Team();

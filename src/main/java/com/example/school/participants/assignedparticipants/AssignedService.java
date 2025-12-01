@@ -362,11 +362,15 @@ public Map<String, Object> getParticipantsAndJuriesByEvent(Long eventId, PageFil
             .stream().collect(Collectors.toMap(Jury::getId, j -> j));
 
 // 5️⃣ Optional: fetch category
-    String category = assignedParticipants.stream()
-            .map(AssignedParticipant::getCategory)
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(null);
+//    String category = assignedParticipants.stream()
+//            .map(AssignedParticipant::getCategory)
+//            .filter(Objects::nonNull)
+//            .findFirst()
+//            .orElse(null);
+// Extract category only from this group's participants
+
+
+
 
 // 6️⃣ Build group response
     List<Map<String, Object>> groupResponses = assignedGroupsPage.stream().map(group -> {
@@ -378,7 +382,13 @@ public Map<String, Object> getParticipantsAndJuriesByEvent(Long eventId, PageFil
                 .flatMap(teamRepository::findById)
                 .orElse(null);
         groupData.put("teamName", team != null ? team.getName() : null);
-        groupData.put("category", category);
+        String groupCategory = assignedParticipants.stream()
+                .filter(ap -> group.getId().equals(ap.getAssignedGroupId()))
+                .map(AssignedParticipant::getCategory)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+        groupData.put("category", groupCategory);
 
         // Participants under this group (only unscored)
         List<ParticipantsDto> participants = assignedParticipants.stream()
