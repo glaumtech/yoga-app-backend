@@ -11,8 +11,9 @@ import java.util.List;
 public interface ScoringRepository extends JpaRepository<Scoring, Long> {
     List<Scoring> findByEventIdAndDeletedFalse(Long eventId);
 
-    Scoring findByEventIdAndParticipantIdAndDeletedFalse(Long eventId, Long participantId);
 
     List<Scoring> findByEventId(Long eventId);
+
+    List<Scoring> findByEventIdAndParticipantIdAndDeletedFalse(Long eventId, Long participantId);
 }
 

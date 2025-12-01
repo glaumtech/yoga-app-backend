@@ -616,9 +616,17 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
     }
 
 // 1️⃣ Fetch all assigned groups for the event
-    List<AssignedGroup> assignedGroups = assignedGroupRepo.findAllByEventId(eventId);
+   // List<AssignedGroup> assignedGroups = assignedGroupRepo.findAllByEventId(eventId);
+    List<AssignedGroup> assignedGroups = assignedGroupRepo.findAllByEventId(eventId)
+            .stream()
+            .sorted(Comparator.comparing(AssignedGroup::getId)) // ASC order
+            .toList();
+
     if (assignedGroups.isEmpty()) {
-        throw new RuntimeException("No groups found for eventId=" + eventId);
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("groups", Collections.emptyList());
+        return data;
+        //throw new RuntimeException("No groups found for eventId=" + eventId);
     }
 
 // 2️⃣ Extract group IDs
@@ -680,6 +688,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
                         p.getGroupName(),
                         p.getSchoolName()
                 ))
+                .sorted(Comparator.comparing(ParticipantsDto::getId)) // ASC by name
                 .toList();
         groupData.put("participants", participantResponses);
 
@@ -688,6 +697,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
                 .filter(Objects::nonNull)
                 .distinct()
                 .map(j -> new JuryDto(j.getId(), j.getName()))
+                .sorted(Comparator.comparing(JuryDto::getId)) // ASC by name
                 .toList();
         groupData.put("juries", juryResponses);
 

@@ -75,7 +75,7 @@ public class ScoringController {
                     scoringService.getScoresByEventAndParticipant(eventId, participantId);
 
             response.put("status", "success");
-            response.put("message", "Scores retrieved successfully!");
+            response.put("message", "Score retrieved successfully!");
             response.put("data", Map.of("scoreOfParticipant", participantScore));
 
             return ResponseEntity.ok(response);
