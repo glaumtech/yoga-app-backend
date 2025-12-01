@@ -95,89 +95,177 @@ public class ScoringService {
 
         return participantTotals;
     }
-    public Map<String, Object> getGroupedParticipantScores(Long eventId) {
+//    public Map<String, Object> getGroupedParticipantScores(Long eventId) {
+//
+//        Map<String, Object> response = new LinkedHashMap<>();
+//        response.put("eventId", eventId);
+//
+//        // 1️⃣ Fetch all scorings for this event
+//        List<Scoring> scorings = participantEventRepo.findByEventId(eventId);
+//
+//        // 2️⃣ Get all scoring IDs
+//        List<Long> scoringIds = scorings.stream().map(Scoring::getId).toList();
+//
+//        // 3️⃣ Fetch all ParticipantAsana for these scorings
+//        List<ParticipantAsana> asanas = participantAsanaRepo.findAllByScoringIdIn(scoringIds);
+//
+//        // 4️⃣ Group scorings by participant
+//        Map<Long, List<Scoring>> scoringsByParticipant =
+//                scorings.stream().collect(Collectors.groupingBy(Scoring::getParticipantId));
+//
+//        // 5️⃣ Build participant list
+//        List<Map<String, Object>> participantsList = new ArrayList<>();
+//
+//        for (Map.Entry<Long, List<Scoring>> entry : scoringsByParticipant.entrySet()) {
+//
+//            Long participantId = entry.getKey();
+//            List<Scoring> participantScorings = entry.getValue();
+//
+//            // ⭐ Group scorings by category
+//            Map<String, List<Scoring>> scoringsByCategory = participantScorings.stream()
+//                    .collect(Collectors.groupingBy(Scoring::getCategory));
+//
+//            // ⭐ Build category list
+//            List<Map<String, Object>> categoryList = new ArrayList<>();
+//
+//            for (Map.Entry<String, List<Scoring>> catEntry : scoringsByCategory.entrySet()) {
+//
+//                String category = catEntry.getKey();
+//                List<Scoring> categoryScorings = catEntry.getValue();
+//
+//                // ⭐ Group asanas inside each category
+//                Map<String, List<Map<String, Object>>> asanasMap = new LinkedHashMap<>();
+//
+//                for (Scoring s : categoryScorings) {
+//
+//                    List<ParticipantAsana> participantAsanas = asanas.stream()
+//                            .filter(a -> a.getScoringId().equals(s.getId()))
+//                            .toList();
+//
+//                    for (ParticipantAsana a : participantAsanas) {
+//                        asanasMap.computeIfAbsent(a.getAsanaName(), k -> new ArrayList<>())
+//                                .add(Map.of(
+//                                        "juryId", s.getJuryId(),
+//                                        "score", a.getScore()
+//                                ));
+//                    }
+//                }
+//
+//                // Convert map → list
+//                List<Map<String, Object>> asanasList = asanasMap.entrySet().stream()
+//                        .map(e -> Map.of(
+//                                "asanaName", e.getKey(),
+//                                "juryMarks", e.getValue()
+//                        ))
+//                        .toList();
+//
+//                // Build category object
+//                Map<String, Object> categoryBlock = new LinkedHashMap<>();
+//                categoryBlock.put("category", category);
+//                categoryBlock.put("asanas", asanasList);
+//
+//                categoryList.add(categoryBlock);
+//            }
+//
+//            // ⭐ Build final participant response
+//            Map<String, Object> participantMap = new LinkedHashMap<>();
+//            participantMap.put("participantId", participantId);
+//            participantMap.put("categories", categoryList);
+//
+//            participantsList.add(participantMap);
+//        }
+//
+//        response.put("participants", participantsList);
+//        return response;
+//    }
+public Map<String, Object> getGroupedParticipantScores(Long eventId) {
 
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("eventId", eventId);
 
-        // 1️⃣ Fetch all scorings for this event
-        List<Scoring> scorings = participantEventRepo.findByEventId(eventId);
+    Map<String, Object> response = new LinkedHashMap<>();
+    response.put("eventId", eventId);
 
-        // 2️⃣ Get all scoring IDs
-        List<Long> scoringIds = scorings.stream().map(Scoring::getId).toList();
+// 1️⃣ Fetch all scorings for this event
+    List<Scoring> scorings = participantEventRepo.findByEventId(eventId);
 
-        // 3️⃣ Fetch all ParticipantAsana for these scorings
-        List<ParticipantAsana> asanas = participantAsanaRepo.findAllByScoringIdIn(scoringIds);
+// 2️⃣ Get all scoring IDs
+    List<Long> scoringIds = scorings.stream().map(Scoring::getId).toList();
 
-        // 4️⃣ Group scorings by participant
-        Map<Long, List<Scoring>> scoringsByParticipant =
-                scorings.stream().collect(Collectors.groupingBy(Scoring::getParticipantId));
+// 3️⃣ Fetch all ParticipantAsana for these scorings
+    List<ParticipantAsana> asanas = participantAsanaRepo.findAllByScoringIdIn(scoringIds);
 
-        // 5️⃣ Build participant list
-        List<Map<String, Object>> participantsList = new ArrayList<>();
+// 4️⃣ Group scorings by participant
+    Map<Long, List<Scoring>> scoringsByParticipant =
+            scorings.stream().collect(Collectors.groupingBy(Scoring::getParticipantId));
 
-        for (Map.Entry<Long, List<Scoring>> entry : scoringsByParticipant.entrySet()) {
+// 5️⃣ Build participant list
+    List<Map<String, Object>> participantsList = new ArrayList<>();
 
-            Long participantId = entry.getKey();
-            List<Scoring> participantScorings = entry.getValue();
+    for (Map.Entry<Long, List<Scoring>> entry : scoringsByParticipant.entrySet()) {
 
-            // ⭐ Group scorings by category
-            Map<String, List<Scoring>> scoringsByCategory = participantScorings.stream()
-                    .collect(Collectors.groupingBy(Scoring::getCategory));
+        Long participantId = entry.getKey();
+        List<Scoring> participantScorings = entry.getValue();
 
-            // ⭐ Build category list
-            List<Map<String, Object>> categoryList = new ArrayList<>();
+        // ⭐ Group scorings by category safely
+        Map<String, List<Scoring>> scoringsByCategory = participantScorings.stream()
+                .collect(Collectors.groupingBy(s -> s.getCategory() != null ? s.getCategory() : "Uncategorized"));
 
-            for (Map.Entry<String, List<Scoring>> catEntry : scoringsByCategory.entrySet()) {
+        // ⭐ Build category list
+        List<Map<String, Object>> categoryList = new ArrayList<>();
 
-                String category = catEntry.getKey();
-                List<Scoring> categoryScorings = catEntry.getValue();
+        for (Map.Entry<String, List<Scoring>> catEntry : scoringsByCategory.entrySet()) {
 
-                // ⭐ Group asanas inside each category
-                Map<String, List<Map<String, Object>>> asanasMap = new LinkedHashMap<>();
+            String category = catEntry.getKey();
+            List<Scoring> categoryScorings = catEntry.getValue();
 
-                for (Scoring s : categoryScorings) {
+            // ⭐ Group asanas inside each category safely
+            Map<String, List<Map<String, Object>>> asanasMap = new LinkedHashMap<>();
 
-                    List<ParticipantAsana> participantAsanas = asanas.stream()
-                            .filter(a -> a.getScoringId().equals(s.getId()))
-                            .toList();
+            for (Scoring s : categoryScorings) {
 
-                    for (ParticipantAsana a : participantAsanas) {
-                        asanasMap.computeIfAbsent(a.getAsanaName(), k -> new ArrayList<>())
-                                .add(Map.of(
-                                        "juryId", s.getJuryId(),
-                                        "score", a.getScore()
-                                ));
-                    }
-                }
-
-                // Convert map → list
-                List<Map<String, Object>> asanasList = asanasMap.entrySet().stream()
-                        .map(e -> Map.of(
-                                "asanaName", e.getKey(),
-                                "juryMarks", e.getValue()
-                        ))
+                List<ParticipantAsana> participantAsanas = asanas.stream()
+                        .filter(a -> a.getScoringId().equals(s.getId()))
                         .toList();
 
-                // Build category object
-                Map<String, Object> categoryBlock = new LinkedHashMap<>();
-                categoryBlock.put("category", category);
-                categoryBlock.put("asanas", asanasList);
+                for (ParticipantAsana a : participantAsanas) {
+                    String asanaName = a.getAsanaName() != null ? a.getAsanaName() : "Unnamed Asana";
 
-                categoryList.add(categoryBlock);
+                    asanasMap.computeIfAbsent(asanaName, k -> new ArrayList<>())
+                            .add(Map.of(
+                                    "juryId", s.getJuryId(),
+                                    "score", a.getScore()
+                            ));
+                }
             }
 
-            // ⭐ Build final participant response
-            Map<String, Object> participantMap = new LinkedHashMap<>();
-            participantMap.put("participantId", participantId);
-            participantMap.put("categories", categoryList);
+            // Convert map → list
+            List<Map<String, Object>> asanasList = asanasMap.entrySet().stream()
+                    .map(e -> Map.of(
+                            "asanaName", e.getKey(),
+                            "juryMarks", e.getValue()
+                    ))
+                    .toList();
 
-            participantsList.add(participantMap);
+            // Build category object
+            Map<String, Object> categoryBlock = new LinkedHashMap<>();
+            categoryBlock.put("category", category);
+            categoryBlock.put("asanas", asanasList);
+
+            categoryList.add(categoryBlock);
         }
 
-        response.put("participants", participantsList);
-        return response;
+        // ⭐ Build final participant response
+        Map<String, Object> participantMap = new LinkedHashMap<>();
+        participantMap.put("participantId", participantId);
+        participantMap.put("categories", categoryList);
+
+        participantsList.add(participantMap);
     }
+
+    response.put("participants", participantsList);
+    return response;
+
+
+}
 
 //    public Map<String, Object> getGroupedParticipantScores(Long eventId) {
 //
