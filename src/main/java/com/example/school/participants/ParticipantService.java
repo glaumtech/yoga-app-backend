@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ParticipantService {
@@ -126,74 +127,67 @@ public class ParticipantService {
         participant.setStatus(status);
         return participantRep.save(participant); // save and return updated entity
     }
-
-//    public List<Participants> getAllParticipants() {
-//        return participantRep.findByStatus("Accepted"); // only accepted
-//    }
-
-//    public Page<Participants> getFilteredbyEvent(PageFilterRequest filter, Long eventId) {
-//        Pageable pageable = filter.toPageable();
-//        String name = filter.getParticipantName();
-//        String status = filter.getStatus();
-//
-//        if ((name == null || name.isEmpty()) && (status == null || status.isEmpty())) {
-//            // No name or status filter → return all except Rejected
-//            return participantRep.findAllExcludingStatusByEvent(eventId, pageable);
-//        }
-//
-//        if ((name == null || name.isEmpty())) {
-//            // Only status filter applied
-//            return participantRep.findByStatusExcludingRejectedByEvent(status, eventId, pageable);
-//        }
-//
-//        if (status == null || status.isEmpty()) {
-//            // Only name search applied
-//            return participantRep.findByNameExcludingStatusByEvent(name, eventId, pageable);
-//        }
-//
-//        // Both name and status applied
-//        return participantRep.findByNameAndStatusExcludingRejectedByEvent(name, status, eventId, pageable);
-//    }
-
     public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest request) {
+
         Pageable pageable = request.toPageable();
         ParticipantFilter filter = request.getFilter();
 
-        String participantValue = filter != null ? filter.getParticipant() : null;
-        String groupValue = filter != null ? filter.getGroup() : null;
-        String statusFilter = filter != null && filter.getStatus() != null
-                ? filter.getStatus().toUpperCase()
-                : null;
-        // Fetch participants based on other filters
+        String filterParticipant = filter != null ? filter.getParticipant() : null;
+        String filterStatus = filter != null && filter.getStatus() != null ? filter.getStatus().toUpperCase() : null;
+        String filterGroup = filter != null ? filter.getGroup() : null;
+        String filterCategory = filter != null ? filter.getCategory() : null;
+        String filterAssignmentStatus = filter != null ? filter.getAssignmentStatus() : null;
+
+        // 1️⃣ Fetch participants from DB WITHOUT category filter (multi-category handled in Java)
         Page<Participants> participants = participantRep.findFilteredParticipants(
-                participantValue,
-                statusFilter,
-                filter != null ? filter.getCategory() : null,
-                groupValue,
+                filterParticipant,
+                filterStatus,
+                null,
+                filterGroup,
                 eventId,
                 pageable
         );
 
-        // Get assigned IDs
-        List<Long> assignedIds = (filter != null && filter.getCategory() != null) ?
-                assignedRepo.findAllByEventIdAndCategory(eventId, filter.getCategory())
-                        .stream().map(AssignedParticipant::getParticipantId).toList() :
-                assignedRepo.findAllByEventId(eventId)
-                        .stream().map(AssignedParticipant::getParticipantId).toList();
+        // 2️⃣ Fetch all assigned participants for this event
+        List<AssignedParticipant> assignedList = assignedRepo.findAllByEventId(eventId);
 
-        // Map to DTOs with assignmentStatus
+        // 3️⃣ Build DTOs with category & assignmentStatus logic
         List<ParticipantsDto> responseList = participants.stream()
                 .map(p -> {
-                    ParticipantsDto res = new ParticipantsDto(p);
-                    res.setAssignmentStatus(assignedIds.contains(p.getId()) ? "Assigned" : "Not Assigned");
-                    return res;
-                })
-                // Apply assignmentStatus filter if provided
-                .filter(p -> {
-                    if (filter != null && filter.getAssignmentStatus() != null) {
-                        return p.getAssignmentStatus().equalsIgnoreCase(filter.getAssignmentStatus());
+                    ParticipantsDto dto = new ParticipantsDto(p);
+
+                    // Split participant's category
+                    List<String> participantCategories = Arrays.stream(p.getCategory().split(","))
+                            .map(String::trim)
+                            .toList();
+
+                    // If filterCategory is provided, only show that category
+                    if (filterCategory != null) {
+                        dto.setCategory(filterCategory);
+
+                        boolean assigned = assignedList.stream().anyMatch(a ->
+                                a.getParticipantId().equals(p.getId()) &&
+                                        a.getCategory().equalsIgnoreCase(filterCategory)
+                        );
+
+                        dto.setAssignmentStatus(assigned ? "Assigned" : "Un Assigned");
+                    } else {
+                        // If no category filter, just keep full category and assignmentStatus as "Assigned"/"Un Assigned" per category
+                        // For simplicity, here we mark "Assigned" if assigned in any category
+                        boolean assigned = assignedList.stream().anyMatch(a ->
+                                a.getParticipantId().equals(p.getId())
+                        );
+                        dto.setAssignmentStatus(assigned ? "Assigned" : "Un Assigned");
                     }
-                    return true; // if no filter, keep all
+
+                    return dto;
+                })
+                // 4️⃣ Apply assignmentStatus filter if provided
+                .filter(dto -> {
+                    if (filterAssignmentStatus != null) {
+                        return dto.getAssignmentStatus().equalsIgnoreCase(filterAssignmentStatus);
+                    }
+                    return true;
                 })
                 .toList();
 
@@ -201,38 +195,48 @@ public class ParticipantService {
     }
 
 //    public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest request) {
-//       // Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-//        Pageable pageable = request.toPageable();  // includes sortBy + sortDirection
-//
+//        Pageable pageable = request.toPageable();
 //        ParticipantFilter filter = request.getFilter();
+//
 //        String participantValue = filter != null ? filter.getParticipant() : null;
 //        String groupValue = filter != null ? filter.getGroup() : null;
-//
+//        String statusFilter = filter != null && filter.getStatus() != null
+//                ? filter.getStatus().toUpperCase()
+//                : null;
+//        // Fetch participants based on other filters
 //        Page<Participants> participants = participantRep.findFilteredParticipants(
 //                participantValue,
-//                filter != null ? filter.getStatus() : null,
+//                statusFilter,
 //                filter != null ? filter.getCategory() : null,
 //                groupValue,
 //                eventId,
 //                pageable
 //        );
 //
-//
+//        // Get assigned IDs
 //        List<Long> assignedIds = (filter != null && filter.getCategory() != null) ?
 //                assignedRepo.findAllByEventIdAndCategory(eventId, filter.getCategory())
 //                        .stream().map(AssignedParticipant::getParticipantId).toList() :
 //                assignedRepo.findAllByEventId(eventId)
 //                        .stream().map(AssignedParticipant::getParticipantId).toList();
 //
+//        // Map to DTOs with assignmentStatus
 //        List<ParticipantsDto> responseList = participants.stream()
 //                .map(p -> {
 //                    ParticipantsDto res = new ParticipantsDto(p);
-//
 //                    res.setAssignmentStatus(assignedIds.contains(p.getId()) ? "Assigned" : "Not Assigned");
 //                    return res;
-//                }).toList();
+//                })
+//                // Apply assignmentStatus filter if provided
+//                .filter(p -> {
+//                    if (filter != null && filter.getAssignmentStatus() != null) {
+//                        return p.getAssignmentStatus().equalsIgnoreCase(filter.getAssignmentStatus());
+//                    }
+//                    return true; // if no filter, keep all
+//                })
+//                .toList();
 //
-//        return new PageImpl<>(responseList, pageable, participants.getTotalElements());
+//        return new PageImpl<>(responseList, pageable, responseList.size());
 //    }
 
 
@@ -410,6 +414,7 @@ public class ParticipantService {
         Context context = new Context();
         context.setVariable("participantName", participant.getParticipantName());
         context.setVariable("coordinator", "Jane Smith");
+        context.setVariable("schoolName",participant.getSchoolName());
         context.setVariable("message", "Your dedication and commitment to the art of yoga is commendable. We celebrate your journey of wellness and growth.");
 
         // 3️⃣ Render Thymeleaf HTML template
