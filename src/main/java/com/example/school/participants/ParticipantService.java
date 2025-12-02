@@ -164,6 +164,7 @@ public class ParticipantService {
                             .map(String::trim)
                             .toList();
 
+
                     // If filterCategory is provided, only show that category
                     if (filterCategory != null) {
                         dto.setCategory(filterCategory);
