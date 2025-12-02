@@ -15,6 +15,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -74,7 +75,7 @@ public class ParticipantService {
         participants.setGender(data.getGender());
         participants.setCategory(data.getCategory());
         participants.setSchoolName(data.getSchoolName());
-        participants.setGroupName(data.getGroup());
+        participants.setStandard(data.getGroup());
         participants.setStandard(data.getStandard());
         participants.setYogaMasterName(data.getYogaMasterName());
         participants.setYogaMasterContact(data.getYogaMasterContact());
@@ -269,7 +270,7 @@ public class ParticipantService {
         participants.setYogaMasterName(data.getYogaMasterName());
         participants.setYogaMasterContact(data.getYogaMasterContact());
         participants.setAddress(data.getAddress());
-        participants.setGroupName(data.getGroup());
+        participants.setStandard(data.getGroup());
         //participants.setStatus("Requested");
         // File upload → EXACT same style as Event save()
         if (file != null && !file.isEmpty()) {
@@ -402,38 +403,64 @@ public class ParticipantService {
         return participantRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Participant not found with id: " + id));
     }
-    public byte[] generateCertificatePdf(Long participantId) throws Exception {
+//    public byte[] generateCertificatePdf(Long participantId) throws Exception {
+//
+//        // 1️⃣ Fetch participant details
+//        Participants participant = getParticipantById(participantId);
+//        if (participant == null) {
+//            throw new RuntimeException("Participant not found");
+//        }
+//
+//        // 2️⃣ Prepare Thymeleaf context
+//        Context context = new Context();
+//        context.setVariable("participantName", participant.getParticipantName());
+//        context.setVariable("coordinator", "Jane Smith");
+//        context.setVariable("schoolName",participant.getSchoolName());
+//        context.setVariable("message", "Your dedication and commitment to the art of yoga is commendable. We celebrate your journey of wellness and growth.");
+//
+//        // 3️⃣ Render Thymeleaf HTML template
+//        String htmlContent = templateEngine.process("certificate", context);
+//
+//        // 4️⃣ Convert HTML to PDF (iText 5)
+//        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
+//        PdfWriter.getInstance(document, out);
+//        document.open();
+//
+//        List<Element> elements = HTMLWorker.parseToList(new StringReader(htmlContent), null);
+//        for (Element e : elements) {
+//            document.add(e);
+//        }
+//
+//        document.close();
+//        return out.toByteArray();
+//    }
+public byte[] generateCertificatePdf(Long participantId) throws IOException {
+    Participants participant = getParticipantById(participantId);
 
-        // 1️⃣ Fetch participant details
-        Participants participant = getParticipantById(participantId);
-        if (participant == null) {
-            throw new RuntimeException("Participant not found");
-        }
+    Context context = new Context();
+    context.setVariable("participantName", participant.getParticipantName());
+    context.setVariable("coordinator", "Jane Smith");
+    context.setVariable("schoolName", participant.getSchoolName());
+    context.setVariable("message", "Your dedication and commitment to yoga is commendable.");
 
-        // 2️⃣ Prepare Thymeleaf context
-        Context context = new Context();
-        context.setVariable("participantName", participant.getParticipantName());
-        context.setVariable("coordinator", "Jane Smith");
-        context.setVariable("schoolName",participant.getSchoolName());
-        context.setVariable("message", "Your dedication and commitment to the art of yoga is commendable. We celebrate your journey of wellness and growth.");
+    String htmlContent = templateEngine.process("certificate", context);
 
-        // 3️⃣ Render Thymeleaf HTML template
-        String htmlContent = templateEngine.process("certificate", context);
+    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+        builder.useFastMode();
+        builder.withHtmlContent(htmlContent, null);
+        // Optionally register fonts
+        // builder.useFont(() -> getClass().getResourceAsStream("/fonts/Georgia.ttf"), "Georgia");
+        builder.toStream(outputStream);
+        builder.run();
 
-        // 4️⃣ Convert HTML to PDF (iText 5)
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
-        PdfWriter.getInstance(document, out);
-        document.open();
-
-        List<Element> elements = HTMLWorker.parseToList(new StringReader(htmlContent), null);
-        for (Element e : elements) {
-            document.add(e);
-        }
-
-        document.close();
-        return out.toByteArray();
+        return outputStream.toByteArray();
+    } catch (Exception e) {
+        throw new IOException("Error generating PDF", e);
     }
+}
+
 }
 
 

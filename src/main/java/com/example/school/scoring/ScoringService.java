@@ -186,7 +186,7 @@ public Map<String, Object> getGroupedParticipantScores(Long eventId) {
         Map<String, Object> participantMapResponse = new LinkedHashMap<>();
         participantMapResponse.put("participantId", participantId);
         participantMapResponse.put("participantName", participant != null ? participant.getParticipantName(): null);
-        participantMapResponse.put("groupName", participant != null ? participant.getGroupName() : null);
+        participantMapResponse.put("groupName", participant != null ? participant.getStandard() : null);
         participantMapResponse.put("schoolName", participant != null ? participant.getSchoolName() : null);
         participantMapResponse.put("age",participant!=null?participant.getAge():null);
         participantMapResponse.put("gender",participant!=null?participant.getGender():null);
@@ -281,7 +281,7 @@ public Map<String, Object> getScoresByEventAndParticipant(Long eventId, Long par
     Map<String, Object> participantMapResponse = new LinkedHashMap<>();
     participantMapResponse.put("participantId", participantId);
     participantMapResponse.put("participantName", participant != null ? participant.getParticipantName() : null);
-    participantMapResponse.put("groupName", participant != null ? participant.getGroupName() : null);
+    participantMapResponse.put("groupName", participant != null ? participant.getStandard() : null);
     participantMapResponse.put("schoolName", participant != null ? participant.getSchoolName() : null);
     participantMapResponse.put("age",participant!=null?participant.getAge():null);
     participantMapResponse.put("gender",participant!=null?participant.getGender():null);

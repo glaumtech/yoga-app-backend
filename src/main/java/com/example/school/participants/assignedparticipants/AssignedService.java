@@ -212,7 +212,7 @@ public Map<String, Object> getParticipantsAndJuriesByEvent(Long eventId, PageFil
                 .map(p -> new ParticipantsDto(
                         p.getId(),
                         p.getParticipantName(),
-                        p.getGroupName(),
+                        p.getStandard(),
                         p.getSchoolName()
                 ))
                 .toList();
@@ -321,7 +321,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
                 .map(p -> new ParticipantsDto(
                         p.getId(),
                         p.getParticipantName(),
-                        p.getGroupName(),
+                        p.getStandard(),
                         p.getSchoolName()
                 ))
                 .sorted(Comparator.comparing(ParticipantsDto::getId)) // ASC by name

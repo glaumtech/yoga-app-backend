@@ -23,7 +23,7 @@ public interface ParticipantRep extends JpaRepository<Participants,Long> {
       AND (:participant IS NULL OR LOWER(p.participantName) LIKE LOWER(CONCAT('%', :participant, '%')) 
            OR LOWER(p.participantCode) LIKE LOWER(CONCAT('%', :participant, '%')))
       AND (:category IS NULL OR p.category = :category)
-      AND (:groupName IS NULL OR LOWER(p.groupName) = LOWER(:groupName))
+      AND (:groupName IS NULL OR LOWER(p.standard) = LOWER(:groupName))
       AND p.eventId = :eventId
 """)
     Page<Participants> findFilteredParticipants(

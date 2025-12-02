@@ -46,7 +46,7 @@ public class ParticipantsDto {
         this.status=participants.getStatus();
         this.address=participants.getAddress();
         this.photo=participants.getPhoto();
-        this.group=participants.getGroupName();
+        this.group=participants.getStandard();
     }
 
 }
