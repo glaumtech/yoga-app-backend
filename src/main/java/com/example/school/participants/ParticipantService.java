@@ -33,6 +33,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -440,10 +442,16 @@ public byte[] generateCertificatePdf(Long participantId) throws IOException {
 
     Context context = new Context();
     context.setVariable("participantName", participant.getParticipantName());
-    context.setVariable("coordinator", "Jane Smith");
-    context.setVariable("schoolName", participant.getSchoolName());
-    context.setVariable("message", "Your dedication and commitment to yoga is commendable.");
 
+    Event event = eventRep.findById(participant.getEventId())
+            .orElseThrow(() -> new RuntimeException("Event not found"));
+    context.setVariable("event",event.getTitle());
+    LocalDate localDate = event.getStartDate();
+    Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    context.setVariable("date", date);
+
+    context.setVariable("schoolName", participant.getSchoolName());
+    context.setVariable("category","CHAMPION OF CHAMPIONS");
     String htmlContent = templateEngine.process("certificate", context);
 
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
