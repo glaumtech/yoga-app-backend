@@ -228,12 +228,13 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
                 // Split participant categories
                 List<String> categories = Arrays.stream(p.getCategory().split(","))
                         .map(String::trim)
+                        .map(String::toLowerCase)
                         .toList();
 
                 // Assigned categories for this participant
                 List<String> assignedCategories = assignedList.stream()
                         .filter(a -> a.getParticipantId().equals(p.getId()))
-                        .map(a -> a.getCategory().trim())
+                        .map(a -> a.getCategory().trim().toLowerCase())
                         .toList();
 
                 String selectedCategory = null;
@@ -242,7 +243,7 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
                 for (String cat : categories) {
 
                     // Check filterCategory
-                    if (filterCategory != null && !cat.equalsIgnoreCase(filterCategory)) {
+                    if (filterCategory != null && !cat.equalsIgnoreCase(filterCategory.trim().toLowerCase())) {
                         continue; // skip
                     }
 
@@ -268,7 +269,7 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
                 String finalSelectedCategory = selectedCategory;
                 boolean scored = assignedList.stream()
                         .anyMatch(a -> a.getParticipantId().equals(p.getId())
-                                && a.getCategory().equalsIgnoreCase(finalSelectedCategory)
+                                && a.getCategory().trim().equalsIgnoreCase(finalSelectedCategory)
                                 && Boolean.TRUE.equals(a.isScored()));
                 dto.setStatus(scored ? "Scored" : dto.getStatus());
 
