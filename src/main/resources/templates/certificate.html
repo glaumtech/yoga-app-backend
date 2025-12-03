@@ -98,7 +98,7 @@
     <div class="subtitle-bold">CHAMPION OF CHAMPIONS</div>
     <div class="paragraph">
         This certificate is proudly awarded to
-        <span style="display: inline-block; width: 270px; border-bottom: 2px dotted #000;" th:text="${participantName}">Participant Name</span>
+        <span style="display: inline-block; width: 270px; border-bottom: 2px dotted #000; word-break: break-word" th:text="${participantName}">Participant Name</span>
         of
         <span style="display: inline-block; width: 330px; border-bottom: 2px dotted #000;" th:text="${schoolName}">School Name</span>
         School/Academy for participation in this <span ><b th:text="${event}"></b></span> held on <span ><b th:text="${#dates.format(date, 'dd MMMM yyyy')}"></b></span>.
@@ -106,7 +106,6 @@
         He/She is appreciated for his/her Excellence in this competition.
 
     </div>
-
     <!-- Signatures -->
     <table class="signatures">
         <tr>
