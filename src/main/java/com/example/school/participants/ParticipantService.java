@@ -218,11 +218,84 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
             pageable
     );
 
-    // 2️⃣ Fetch all assigned rows for this event
+//    List<AssignedParticipant> assignedList = assignedRepo.findAllByEventId(eventId);
+//    List<ParticipantsDto> responseList = participants.stream()
+//            .map(p -> {
+//                ParticipantsDto dto = new ParticipantsDto(p);
+//
+//                // Split participant categories
+//                List<String> categories = Arrays.stream(p.getCategory().split(","))
+//                        .map(String::trim)
+//                        .map(String::toLowerCase)
+//                        .toList();
+//
+//                // Assigned categories for this participant
+//                List<String> assignedCategories = assignedList.stream()
+//                        .filter(a -> a.getParticipantId().equals(p.getId()))
+//                        .map(a -> a.getCategory().trim().toLowerCase())
+//                        .toList();
+//
+//                // Map to hold combined status for each category
+//                Map<String, String> categoryStatusMap = new HashMap<>();
+//
+//                if (filterCategory != null || filterAssignmentStatus != null) {
+//                    // Filtered case: pick first matching category
+//                    String selectedCategory = null;
+//
+//                    for (String cat : categories) {
+//                        // Category filter
+//                        if (filterCategory != null && !cat.equalsIgnoreCase(filterCategory.trim().toLowerCase()))
+//                            continue;
+//
+//                        // AssignmentStatus filter
+//                        boolean assigned = assignedCategories.contains(cat);
+//                        if (filterAssignmentStatus != null) {
+//                            if (filterAssignmentStatus.equalsIgnoreCase("Assigned") && !assigned) continue;
+//                            if (filterAssignmentStatus.equalsIgnoreCase("Un Assigned") && assigned) continue;
+//                        }
+//
+//                        selectedCategory = cat;
+//                        break;
+//                    }
+//
+//                    if (selectedCategory == null) return null;
+//
+//                    dto.setCategory(selectedCategory);
+//                 //   dto.setAssignmentStatus(assignedCategories.contains(selectedCategory) ? "Assigned" : "Un Assigned");
+//
+//                    // Only include the filtered category in categoryStatusMap
+//                    boolean assigned = assignedCategories.contains(selectedCategory);
+//                    String finalSelectedCategory = selectedCategory;
+//                    boolean scored = assignedList.stream()
+//                            .anyMatch(a -> a.getParticipantId().equals(p.getId())
+//                                    && a.getCategory().trim().equalsIgnoreCase(finalSelectedCategory)
+//                                    && Boolean.TRUE.equals(a.isScored()));
+//                    categoryStatusMap.put(selectedCategory, (assigned ? "Assigned" : "Un Assigned") + ", " + (scored ? "Scored" : "Not Scored"));
+//
+//                }  else {
+//                    // No filters: include all categories
+//                    dto.setCategory(String.join(", ", categories));
+//
+//                    for (String cat : categories) {
+//                        boolean assigned = assignedCategories.contains(cat);
+//                        boolean scored = assignedList.stream()
+//                                .anyMatch(a -> a.getParticipantId().equals(p.getId())
+//                                        && a.getCategory().trim().equalsIgnoreCase(cat)
+//                                        && Boolean.TRUE.equals(a.isScored()));
+//                        categoryStatusMap.put(cat, (assigned ? "Assigned" : "Un Assigned") + ", " + (scored ? "Scored" : "Not Scored"));
+//                    }
+//                }
+//
+//                dto.setCategoryStatusMap(categoryStatusMap);
+//
+//                return dto;
+//            })
+//            .filter(Objects::nonNull)
+//            .toList();
+
     List<AssignedParticipant> assignedList = assignedRepo.findAllByEventId(eventId);
     List<ParticipantsDto> responseList = participants.stream()
             .map(p -> {
-
                 ParticipantsDto dto = new ParticipantsDto(p);
 
                 // Split participant categories
@@ -237,98 +310,84 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
                         .map(a -> a.getCategory().trim().toLowerCase())
                         .toList();
 
-                String selectedCategory = null;
+                // Map to hold status for each category
+                Map<String, String> categoryStatusMap = new HashMap<>();
 
-                // Pick first category that matches BOTH filters
-                for (String cat : categories) {
+                if (filterCategory != null || filterAssignmentStatus != null) {
+                    // Filtered case: pick first matching category
+                    String selectedCategory = null;
 
-                    // Check filterCategory
-                    if (filterCategory != null && !cat.equalsIgnoreCase(filterCategory.trim().toLowerCase())) {
-                        continue; // skip
+                    for (String cat : categories) {
+                        // Category filter
+                        if (filterCategory != null && !cat.equalsIgnoreCase(filterCategory.trim().toLowerCase()))
+                            continue;
+
+                        // AssignmentStatus filter
+                        boolean assigned = assignedCategories.contains(cat);
+                        if (filterAssignmentStatus != null) {
+                            if (filterAssignmentStatus.equalsIgnoreCase("Assigned") && !assigned) continue;
+                            if (filterAssignmentStatus.equalsIgnoreCase("Un Assigned") && assigned) continue;
+                        }
+
+                        selectedCategory = cat;
+                        break;
                     }
 
-                    // Check assignmentStatus
-                    boolean assigned = assignedCategories.contains(cat);
-                    if (filterAssignmentStatus != null) {
-                        if (filterAssignmentStatus.equalsIgnoreCase("Assigned") && !assigned) continue;
-                        if (filterAssignmentStatus.equalsIgnoreCase("Un Assigned") && assigned) continue;
-                    }
+                    if (selectedCategory == null) return null;
 
-                    // This category passes filters
-                    selectedCategory = cat;
-                    break;
+                    dto.setCategory(selectedCategory);
+
+                    // Only include the filtered category in categoryStatusMap with one status
+                    boolean assigned = assignedCategories.contains(selectedCategory);
+                    String finalSelectedCategory = selectedCategory;
+                    boolean scored = assignedList.stream()
+                            .anyMatch(a -> a.getParticipantId().equals(p.getId())
+                                    && a.getCategory().trim().equalsIgnoreCase(finalSelectedCategory)
+                                    && Boolean.TRUE.equals(a.isScored()));
+
+                    String status;
+                    if (scored) {
+                        status = "Scored";
+                    } else if (assigned) {
+                        status = "Assigned";
+                    } else {
+                        status = "Un Assigned";
+                    }
+                    categoryStatusMap.put(selectedCategory, status);
+
+                } else {
+                    // No filters: include all categories
+                    dto.setCategory(String.join(", ", categories));
+
+                    for (String cat : categories) {
+                        boolean assigned = assignedCategories.contains(cat);
+                        boolean scored = assignedList.stream()
+                                .anyMatch(a -> a.getParticipantId().equals(p.getId())
+                                        && a.getCategory().trim().equalsIgnoreCase(cat)
+                                        && Boolean.TRUE.equals(a.isScored()));
+
+                        String status;
+                        if (scored) {
+                            status = "Scored";
+                        } else if (assigned) {
+                            status = "Assigned";
+                        } else {
+                            status = "Un Assigned";
+                        }
+
+                        categoryStatusMap.put(cat, status);
+                    }
                 }
 
-                // No matching category → skip participant
-                if (selectedCategory == null) return null;
-
-                dto.setCategory(selectedCategory);
-                dto.setAssignmentStatus(assignedCategories.contains(selectedCategory) ? "Assigned" : "Un Assigned");
-
-                // ✅ Set status based on whether participant scored in this category
-                String finalSelectedCategory = selectedCategory;
-                boolean scored = assignedList.stream()
-                        .anyMatch(a -> a.getParticipantId().equals(p.getId())
-                                && a.getCategory().trim().equalsIgnoreCase(finalSelectedCategory)
-                                && Boolean.TRUE.equals(a.isScored()));
-                dto.setStatus(scored ? "Scored" : dto.getStatus());
+                dto.setCategoryStatusMap(categoryStatusMap);
 
                 return dto;
-
             })
             .filter(Objects::nonNull)
             .toList();
 
-    // 3️⃣ Build DTOs using category-split logic
-//    List<ParticipantsDto> responseList = participants.stream()
-//            .map(p -> {
-//
-//                ParticipantsDto dto = new ParticipantsDto(p);
-//
-//                // Split participant categories
-//                List<String> categories = Arrays.stream(p.getCategory().split(","))
-//                        .map(String::trim)
-//                        .toList();
-//
-//                // Assigned categories for this participant
-//                List<String> assignedCategories = assignedList.stream()
-//                        .filter(a -> a.getParticipantId().equals(p.getId()))
-//                        .map(a -> a.getCategory().trim())
-//                        .toList();
-//
-//                String selectedCategory = null;
-//
-//                // Pick first category that matches BOTH filters
-//                for (String cat : categories) {
-//
-//                    // Check filterCategory
-//                    if (filterCategory != null && !cat.equalsIgnoreCase(filterCategory)) {
-//                        continue; // skip
-//                    }
-//
-//                    // Check assignmentStatus
-//                    boolean assigned = assignedCategories.contains(cat);
-//                    if (filterAssignmentStatus != null) {
-//                        if (filterAssignmentStatus.equalsIgnoreCase("Assigned") && !assigned) continue;
-//                        if (filterAssignmentStatus.equalsIgnoreCase("Un Assigned") && assigned) continue;
-//                    }
-//
-//                    // This category passes filters
-//                    selectedCategory = cat;
-//                    break;
-//                }
-//
-//                // No matching category → skip participant
-//                if (selectedCategory == null) return null;
-//
-//                dto.setCategory(selectedCategory);
-//                dto.setAssignmentStatus(assignedCategories.contains(selectedCategory) ? "Assigned" : "Un Assigned");
-//
-//                return dto;
-//
-//            })
-//            .filter(Objects::nonNull)
-//            .toList();
+
+
 
     return new PageImpl<>(responseList, pageable, responseList.size());
 }

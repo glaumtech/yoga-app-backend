@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -25,8 +26,10 @@ public class ParticipantsDto {
     private String address;
     private String participantCode;
     private Long eventId;
-    private String assignmentStatus;
+//    private String assignmentStatus;
     private String group;
+
+    private Map<String, String> categoryStatusMap;   // category -> Scored/Not Scored
 
     private String photo; // to store image filename
 
