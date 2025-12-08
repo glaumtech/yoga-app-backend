@@ -514,6 +514,7 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
             badgeTable.addCell(badgeCell);
             document.add(badgeTable);
 
+
             document.add(new Paragraph(" "));
 
             // --------- Authorized Seal on Right ----------

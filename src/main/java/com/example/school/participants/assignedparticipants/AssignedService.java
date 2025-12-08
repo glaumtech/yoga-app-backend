@@ -312,7 +312,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
         groupData.put("teamName", team != null ? team.getName() : null);
 
         String groupCategory = groupParticipants.get(0).getCategory();
-        groupData.put("category", groupCategory);
+         groupData.put("category", groupCategory);
 
         List<ParticipantsDto> participantResponses = groupParticipants.stream()
                 .map(ap -> participantMap.get(ap.getParticipantId()))
@@ -322,7 +322,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
                         p.getId(),
                         p.getParticipantName(),
                         p.getStandard(),
-                        p.getSchoolName()
+                             p.getSchoolName()
                 ))
                 .sorted(Comparator.comparing(ParticipantsDto::getId)) // ASC by name
                 .toList();

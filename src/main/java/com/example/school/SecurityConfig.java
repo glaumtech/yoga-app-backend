@@ -37,7 +37,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("http://localhost:4200", "http://localhost:8083","http://localhost:*")
+                .allowedOriginPatterns("http://localhost:4200", "http://localhost:8083","http://localhost:*","https://d1fl9gr1w0091l.cloudfront.net")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true)
