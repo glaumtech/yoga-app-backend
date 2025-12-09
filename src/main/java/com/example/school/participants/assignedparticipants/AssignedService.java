@@ -227,9 +227,12 @@ public Map<String, Object> getParticipantsAndJuriesByEvent(Long eventId, PageFil
                 .map(j -> new JuryDto(j.getId(), j.getName()))
                 .collect(Collectors.toList());
         groupData.put("juries", juries);
-
+        if (participants.isEmpty() || juries.isEmpty()) {
+            return null; // this group will be skipped
+        }
         return groupData;
-    }).collect(Collectors.toList());
+    })    .filter(Objects::nonNull) // skip groups with empty participants/juries
+            .collect(Collectors.toList());
 
 // 7️⃣ Final response
     Map<String, Object> data = new LinkedHashMap<>();
