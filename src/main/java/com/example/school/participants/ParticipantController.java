@@ -188,7 +188,7 @@ public ResponseEntity<Map<String, Object>> submitData(
 
         // 1️⃣ Find the Event
         Optional<Participants> optionalParticipants = participantRep.findById(id);
-        if (optionalParticipants.isEmpty()) {
+        if (!optionalParticipants.isPresent()) {
             response.put("status", "error");
             response.put("message", "Participant not found with id " + id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

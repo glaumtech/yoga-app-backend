@@ -1,6 +1,6 @@
 package com.example.school.scoring.entity;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.*;
 
 @Entity

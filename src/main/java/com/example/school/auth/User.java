@@ -1,7 +1,7 @@
 package com.example.school.auth;
 
 import com.example.school.role.Role;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 @Entity

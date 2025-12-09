@@ -1,5 +1,5 @@
 package com.example.school.participants.assignedparticipants;
-
+import java.util.stream.Collectors;
 import com.example.school.jury.Jury;
 import com.example.school.jury.JuryDto;
 import com.example.school.jury.JuryRepository;
@@ -66,22 +66,22 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
 
 // 2️⃣ Validate participant and jury IDs
     Set<Long> validParticipantIds = participantRep.findAllById(
-            req.getParticipants().stream().map(ParticipantsDto::getId).toList()
+            req.getParticipants().stream().map(ParticipantsDto::getId).collect(Collectors.toList())
     ).stream().map(Participants::getId).collect(Collectors.toSet());
 
     Set<Long> validJuryIds = juryRep.findAllById(
-            req.getJuryDtos().stream().map(JuryDto::getId).toList()
+            req.getJuryDtos().stream().map(JuryDto::getId).collect(Collectors.toList())
     ).stream().map(Jury::getId).collect(Collectors.toSet());
 
     List<Long> invalidParticipantIds = req.getParticipants().stream()
             .map(ParticipantsDto::getId)
             .filter(id -> !validParticipantIds.contains(id))
-            .toList();
+            .collect(Collectors.toList());
 
     List<Long> invalidJuryIds = req.getJuryDtos().stream()
             .map(JuryDto::getId)
             .filter(id -> !validJuryIds.contains(id))
-            .toList();
+            .collect(Collectors.toList());
 
     if (!invalidParticipantIds.isEmpty() || !invalidJuryIds.isEmpty()) {
         throw new RuntimeException("Invalid IDs: Participants=" + invalidParticipantIds + ", Juries=" + invalidJuryIds);
@@ -129,7 +129,7 @@ public List<AssignedParticipant> assignParticipants(RequestDto req) {
         List messages = duplicates.entrySet().stream()
                 .map(e -> "Category '" + e.getKey() + "' is already assigned for participant(s) " +
                         e.getValue().stream().sorted().map(String::valueOf).collect(Collectors.joining(",")))
-                .toList();
+                .collect(Collectors.toList());
         throw new RuntimeException(String.join("; ", messages));
     }
 // 6️⃣ Save all new assignments at once
@@ -150,7 +150,7 @@ public Map<String, Object> getParticipantsAndJuriesByEvent(Long eventId, PageFil
     List<Long> groupIds = assignedGroupsPage.stream()
             .map(AssignedGroup::getId)
             .filter(Objects::nonNull) // ensure no null IDs
-            .toList();
+            .collect(Collectors.toList());
 
 // 2️⃣ Fetch only unscored participants in these groups
     List<AssignedParticipant> assignedParticipants =
@@ -215,7 +215,7 @@ public Map<String, Object> getParticipantsAndJuriesByEvent(Long eventId, PageFil
                         p.getStandard(),
                         p.getSchoolName()
                 ))
-                .toList();
+                .collect(Collectors.toList());
         groupData.put("participants", participants);
 
         // Juries for this group (distinct, only assigned to unscored participants)
@@ -225,11 +225,11 @@ public Map<String, Object> getParticipantsAndJuriesByEvent(Long eventId, PageFil
                 .filter(Objects::nonNull)
                 .distinct()
                 .map(j -> new JuryDto(j.getId(), j.getName()))
-                .toList();
+                .collect(Collectors.toList());
         groupData.put("juries", juries);
 
         return groupData;
-    }).toList();
+    }).collect(Collectors.toList());
 
 // 7️⃣ Final response
     Map<String, Object> data = new LinkedHashMap<>();
@@ -255,7 +255,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
     List<AssignedGroup> assignedGroups = assignedGroupRepo.findAllByEventId(eventId)
             .stream()
             .sorted(Comparator.comparing(AssignedGroup::getId)) // ASC order
-            .toList();
+            .collect(Collectors.toList());
 
     if (assignedGroups.isEmpty()) {
 
@@ -266,7 +266,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
     List<Long> groupIds = assignedGroups.stream()
             .map(AssignedGroup::getId)
             .filter(Objects::nonNull)
-            .toList();
+            .collect(Collectors.toList());
 
 // 3️⃣ Fetch participants assigned to this jury in these groups and who are unscored
     List<AssignedParticipant> assignedParticipants =
@@ -299,7 +299,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
 // 6️⃣ Build groups list, excluding empty groups
     List<Map<String, Object>> groups = new ArrayList<>();
     for (AssignedGroup group : assignedGroups) {
-        List<AssignedParticipant> groupParticipants = participantsByGroup.getOrDefault(group.getId(), List.of());
+        List<AssignedParticipant> groupParticipants = participantsByGroup.getOrDefault(group.getId(),  Collections.emptyList());
 
         // Skip groups with no participants
         if (groupParticipants.isEmpty()) continue;
@@ -325,7 +325,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
                              p.getSchoolName()
                 ))
                 .sorted(Comparator.comparing(ParticipantsDto::getId)) // ASC by name
-                .toList();
+                .collect(Collectors.toList());
         groupData.put("participants", participantResponses);
 
         List<JuryDto> juryResponses = groupParticipants.stream()
@@ -334,7 +334,7 @@ public Map<String, Object> getParticipantsForJury(Long eventId, Long juryId) {
                 .distinct()
                 .map(j -> new JuryDto(j.getId(), j.getName()))
                 .sorted(Comparator.comparing(JuryDto::getId)) // ASC by name
-                .toList();
+                .collect(Collectors.toList());
         groupData.put("juries", juryResponses);
 
         groups.add(groupData);

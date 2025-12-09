@@ -25,9 +25,12 @@ public class ScoringController {
             try {
                 List<Map<String, Object>> savedParticipants = scoringService.saveScores(request);
 
+                Map<String, Object> data = new HashMap<>();
+                data.put("participants", savedParticipants);
+
                 response.put("status", "success");
                 response.put("message", "Scores saved successfully!");
-                response.put("data", Map.of("participants", savedParticipants));
+                response.put("data", data);
 
                 return ResponseEntity.ok(response);
 
@@ -48,9 +51,12 @@ public class ScoringController {
                 // Retrieve scores from service
                 Map<String, Object> participantsScores = scoringService.getGroupedParticipantScores(eventId);
 
+                Map<String, Object> data = new HashMap<>();
+                data.put("scoreOfParticipants", participantsScores);
+
                 response.put("status", "success");
                 response.put("message", "Scores retrieved successfully!");
-                response.put("data", Map.of("scoreOfParticipants", participantsScores));
+                response.put("data", data);
 
                 return ResponseEntity.ok(response);
 
@@ -74,9 +80,12 @@ public class ScoringController {
             Map<String, Object> participantScore =
                     scoringService.getScoresByEventAndParticipant(eventId, participantId);
 
+            Map<String, Object> data = new HashMap<>();
+            data.put("scoreOfParticipant", participantScore);
+
             response.put("status", "success");
             response.put("message", "Score retrieved successfully!");
-            response.put("data", Map.of("scoreOfParticipant", participantScore));
+            response.put("data", data);
 
             return ResponseEntity.ok(response);
 

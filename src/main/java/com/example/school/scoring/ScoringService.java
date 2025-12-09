@@ -108,7 +108,7 @@ public Map<String, Object> getGroupedParticipantScores(Long eventId) {
     List<Scoring> scorings = participantEventRepo.findByEventId(eventId);
 
 // 2️⃣ Get all scoring IDs
-    List<Long> scoringIds = scorings.stream().map(Scoring::getId).toList();
+    List<Long> scoringIds = scorings.stream().map(Scoring::getId).collect(Collectors.toList());
 
 // 3️⃣ Fetch all ParticipantAsana for these scorings
     List<ParticipantAsana> asanas = participantAsanaRepo.findAllByScoringIdIn(scoringIds);
@@ -148,7 +148,7 @@ public Map<String, Object> getGroupedParticipantScores(Long eventId) {
             for (Scoring s : categoryScorings) {
                 List<ParticipantAsana> participantAsanas = asanas.stream()
                         .filter(a -> a.getScoringId().equals(s.getId()))
-                        .toList();
+                        .collect(Collectors.toList());
 
                 for (ParticipantAsana a : participantAsanas) {
                     String asanaName = a.getAsanaName() != null ? a.getAsanaName() : "Unnamed Asana";
@@ -156,10 +156,10 @@ public Map<String, Object> getGroupedParticipantScores(Long eventId) {
                     categoryGrandTotal += score;
 
                     asanasMap.computeIfAbsent(asanaName, k -> new ArrayList<>())
-                            .add(Map.of(
-                                    "juryId", s.getJuryId(),
-                                    "score", score
-                            ));
+                            .add(new HashMap<String, Object>() {{
+                                put("juryId", s.getJuryId());
+                                put("score", score);
+                            }});
                 }
             }
 
@@ -168,12 +168,14 @@ public Map<String, Object> getGroupedParticipantScores(Long eventId) {
                         double subtotal = e.getValue().stream()
                                 .mapToDouble(v -> (Double) v.get("score"))
                                 .sum();
-                        return Map.of(
-                                "asanaName", e.getKey(),
-                                "subtotal", subtotal,
-                                "juryMarks", e.getValue()
-                        );
-                    }).toList();
+                        Map<String, Object> result = new HashMap<>();
+                        result.put("asanaName", e.getKey());
+                        result.put("subtotal", subtotal);
+                        result.put("juryMarks", e.getValue());
+
+                        return result;
+                    })
+                    .collect(Collectors.toList());
 
             Map<String, Object> categoryBlock = new LinkedHashMap<>();
             categoryBlock.put("category", category);
@@ -219,7 +221,7 @@ public Map<String, Object> getScoresByEventAndParticipant(Long eventId, Long par
     Participants participant = participantRepository.findById(participantId).orElse(null);
 
 // Fetch all ParticipantAsana for these scorings
-    List<Long> scoringIds = scorings.stream().map(Scoring::getId).toList();
+    List<Long> scoringIds = scorings.stream().map(Scoring::getId).collect(Collectors.toList());
     List<ParticipantAsana> asanas = participantAsanaRepo.findAllByScoringIdIn(scoringIds);
     Set<Long> juryIds = scorings.stream().map(Scoring::getJuryId).collect(Collectors.toSet());
     List<Jury> juries = juryRepository.findAllById(juryIds);
@@ -241,7 +243,7 @@ public Map<String, Object> getScoresByEventAndParticipant(Long eventId, Long par
         for (Scoring s : categoryScorings) {
             List<ParticipantAsana> participantAsanas = asanas.stream()
                     .filter(a -> a.getScoringId().equals(s.getId()))
-                    .toList();
+                    .collect(Collectors.toList());
 
             for (ParticipantAsana a : participantAsanas) {
                 String asanaName = a.getAsanaName() != null ? a.getAsanaName() : "Unnamed Asana";
@@ -249,12 +251,13 @@ public Map<String, Object> getScoresByEventAndParticipant(Long eventId, Long par
                 categoryGrandTotal += score;
                 Long juryId = s.getJuryId();
                 String juryName = juryMap.get(juryId); // get jury name
-                asanasMap.computeIfAbsent(asanaName, k -> new ArrayList<>())
-                        .add(Map.of(
-                                "juryId", s.getJuryId(),
-                                "juryName", juryName,
-                                "score", score
-                        ));
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("juryId", juryId);
+                entry.put("juryName", juryName);
+                entry.put("score", score);
+
+                // Add to asanasMap
+                asanasMap.computeIfAbsent(asanaName, k -> new ArrayList<>()).add(entry);
             }
         }
 
@@ -263,12 +266,14 @@ public Map<String, Object> getScoresByEventAndParticipant(Long eventId, Long par
                     double subtotal = e.getValue().stream()
                             .mapToDouble(v -> (Double) v.get("score"))
                             .sum();
-                    return Map.of(
-                            "asanaName", e.getKey(),
-                            "subtotal", subtotal,
-                            "juryMarks", e.getValue()
-                    );
-                }).toList();
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("asanaName", e.getKey());
+                    result.put("subtotal", subtotal);
+                    result.put("juryMarks", e.getValue());
+
+                    return result;
+                })
+                .collect(Collectors.toList());
 
         Map<String, Object> categoryBlock = new LinkedHashMap<>();
         categoryBlock.put("category", category);

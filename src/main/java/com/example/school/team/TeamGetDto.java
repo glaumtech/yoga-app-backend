@@ -1,5 +1,5 @@
 package com.example.school.team;
-
+import java.util.stream.Collectors;
 import com.example.school.jury.JuryDto;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +22,6 @@ public class TeamGetDto {
         this.juryList = team.getJuryList()
                 .stream()
                 .map(JuryDto::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 }

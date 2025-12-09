@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TeamService {
@@ -40,7 +41,7 @@ public class TeamService {
             // Fetch juries from DB
             List<Long> juryIds = request.getJuryList().stream()
                     .map(JuryDto::getId)
-                    .toList();
+                    .collect(Collectors.toList());
             for (Long juryId : juryIds) {
                 List<Team> assignedTeams =
                         teamRepo.findTeamsByJuryAndEvent(juryId, request.getEventId());
@@ -60,7 +61,7 @@ public class TeamService {
         List<Team> teams = teamRepo.findAllByDeletedFalseAndEventId(eventId);
         return teams.stream()
                 .map(TeamGetDto::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public Team updateTeam(Long id, TeamRequestDto request) {
@@ -78,7 +79,7 @@ public class TeamService {
         team.setEventId(event.getId());
         List<Long> juryIds = request.getJuryList().stream()
                 .map(JuryDto::getId)
-                .toList();
+                .collect(Collectors.toList());
 
         // Fetch juries from DB
         List<Jury> juries = juryRepo.findAllById(juryIds);

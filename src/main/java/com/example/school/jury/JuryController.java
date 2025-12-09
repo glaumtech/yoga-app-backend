@@ -167,7 +167,7 @@ public class JuryController {
 
             Optional<Jury> juryOptional = juryRepository.findByUserId(userId);
 
-            if (juryOptional.isEmpty()) {
+            if (!juryOptional.isPresent()) {
                 response.put("status", "failure");
                 response.put("message", "Jury not found for this user");
                 response.put("data", null);

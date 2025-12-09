@@ -93,7 +93,7 @@ public ResponseDto updateUser(RequestDto request, Long juryId) {
     user.setUsername(request.getUsername());
     user.setEmail(request.getEmail());
 
-    if (request.getPassword() != null && !request.getPassword().isBlank()) {
+    if (request.getPassword() != null && !request.getPassword().isEmpty()) {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setConfirmPassword(request.getConfirmPassword());
     }

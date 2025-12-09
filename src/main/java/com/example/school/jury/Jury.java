@@ -3,7 +3,7 @@ package com.example.school.jury;
 import com.example.school.role.Role;
 import com.example.school.team.Team;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 

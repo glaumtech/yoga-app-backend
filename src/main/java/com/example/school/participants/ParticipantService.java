@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.TemplateEngine;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,7 +49,7 @@ public class ParticipantService {
     private EventRep eventRep;
 
     @Autowired
-    private SpringTemplateEngine templateEngine;
+    private TemplateEngine templateEngine;
 
     @Autowired
     private AssignedRepo assignedRepo;
@@ -302,13 +302,13 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
                 List<String> categories = Arrays.stream(p.getCategory().split(","))
                         .map(String::trim)
                         .map(String::toLowerCase)
-                        .toList();
+                        .collect(Collectors.toList());
 
                 // Assigned categories for this participant
                 List<String> assignedCategories = assignedList.stream()
                         .filter(a -> a.getParticipantId().equals(p.getId()))
                         .map(a -> a.getCategory().trim().toLowerCase())
-                        .toList();
+                        .collect(Collectors.toList());
 
                 // Map to hold status for each category
                 Map<String, String> categoryStatusMap = new HashMap<>();
@@ -384,8 +384,7 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
                 return dto;
             })
             .filter(Objects::nonNull)
-            .toList();
-
+            .collect(Collectors.toList());
 
 
 

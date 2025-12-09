@@ -199,7 +199,7 @@ public class EventController {
 
         // 1️⃣ Find the Event
         Optional<Event> optionalEvent = eventRep.findById(id);
-        if (optionalEvent.isEmpty()) {
+        if (!optionalEvent.isPresent()) {
             response.put("status", "error");
             response.put("message", "Event not found with id " + id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
