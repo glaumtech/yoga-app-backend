@@ -71,7 +71,9 @@ public class EventService {
 
     @Transactional
     public Event updateEvent(RequestDto data, MultipartFile file, Long id) throws IOException {
-        if (eventRep.existsByTitleIgnoreCaseAndIdNotAndDeletedFalse(data.getTitle(), data.getId())) {
+
+
+        if (eventRep.existsByTitleIgnoreCaseAndIdNotAndDeletedFalse(data.getTitle(), id)) {
             throw new RuntimeException("Another event with the same name already exists!");
         }
         Event event = eventRep.findById(id)
