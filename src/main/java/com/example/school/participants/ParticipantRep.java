@@ -15,15 +15,15 @@ public interface ParticipantRep extends JpaRepository<Participants,Long> {
 
     Optional<Participants> findTopByOrderByIdDesc();
 
-       @Query("SELECT p FROM Participants p "+
-    "WHERE p.deleted = false"+
-      "AND (:status = 'Rejected' OR p.status <> 'Rejected')"+
-     " AND (:status IS NULL OR p.status = :status)"+
-      "AND (:participant IS NULL OR LOWER(p.participantName) LIKE LOWER(CONCAT('%', :participant, '%'))"+
-         "  OR LOWER(p.participantCode) LIKE LOWER(CONCAT('%', :participant, '%')))"+
-     " AND (:category IS NULL OR p.category = :category)"+
-      "AND (:groupName IS NULL OR LOWER(p.standard) = LOWER(:groupName))"+
-      "AND p.eventId = :eventId")
+    @Query("SELECT p FROM Participants p " +
+            "WHERE p.deleted = false " +
+            "AND (:status = 'Rejected' OR p.status <> 'Rejected') " +
+            "AND (:status IS NULL OR p.status = :status) " +
+            "AND (:participant IS NULL OR LOWER(p.participantName) LIKE LOWER(CONCAT('%', :participant, '%')) " +
+            "     OR LOWER(p.participantCode) LIKE LOWER(CONCAT('%', :participant, '%'))) " +
+            "AND (:category IS NULL OR p.category = :category) " +
+            "AND (:groupName IS NULL OR LOWER(p.standard) = LOWER(:groupName)) " +
+            "AND p.eventId = :eventId")
     Page<Participants> findFilteredParticipants(
             @Param("participant") String participant,
             @Param("status") String status,
