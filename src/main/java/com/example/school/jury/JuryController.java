@@ -188,7 +188,7 @@ public class JuryController {
 
         } catch (Exception e) {
             response.put("status", "failure");
-            response.put("message", "Something went wrong: " + e.getMessage());
+            response.put("message",e.getMessage());
             response.put("data", null);
             return ResponseEntity.status(500).body(response);
         }

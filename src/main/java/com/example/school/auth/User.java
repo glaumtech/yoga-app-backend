@@ -1,5 +1,6 @@
 package com.example.school.auth;
 
+import com.example.school.BaseEntity;
 import com.example.school.role.Role;
 import javax.persistence.*;
 import lombok.Getter;
@@ -7,7 +8,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class User {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

@@ -1,5 +1,6 @@
 package com.example.school.jury;
 
+import com.example.school.BaseEntity;
 import com.example.school.role.Role;
 import com.example.school.team.Team;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -12,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class  Jury {
+public class  Jury  extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

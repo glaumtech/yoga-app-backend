@@ -1,6 +1,8 @@
 package com.example.school.scoring.entity;
 
 import javax.persistence.*;
+
+import com.example.school.BaseEntity;
 import lombok.*;
 
 @Entity
@@ -9,7 +11,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Scoring {
+public class Scoring extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

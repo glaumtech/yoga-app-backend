@@ -76,7 +76,7 @@ public ResponseEntity<Map<String, Object>> submitData(
     } catch (Exception e) {
         e.printStackTrace();
         response.put("status", "error");
-        response.put("message", "Error saving data!");
+        response.put("message", e.getMessage());
         return ResponseEntity.badRequest().body(response);
     }
 }
@@ -275,7 +275,7 @@ public ResponseEntity<Map<String, Object>> submitData(
 
             e.printStackTrace();
             response.put("status", "error");
-            response.put("message", "Error saving data!");
+            response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
 
 

@@ -1,6 +1,8 @@
 package com.example.school.participants;
 
 import javax.persistence.*;
+
+import com.example.school.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -10,7 +12,7 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
-public class Participants {
+public class Participants extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

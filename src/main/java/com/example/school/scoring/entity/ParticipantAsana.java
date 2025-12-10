@@ -1,13 +1,15 @@
 package com.example.school.scoring.entity;
 
 import javax.persistence.*;
+
+import com.example.school.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-public class ParticipantAsana {
+public class ParticipantAsana  extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

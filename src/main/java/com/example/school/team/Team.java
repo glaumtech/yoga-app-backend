@@ -1,5 +1,6 @@
 package com.example.school.team;
 
+import com.example.school.BaseEntity;
 import com.example.school.jury.Jury;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
@@ -12,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 
-public class Team {
+public class Team  extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
