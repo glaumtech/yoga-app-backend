@@ -19,4 +19,5 @@ boolean existsByNameIgnoreCaseAndEventIdAndDeletedFalse(String name, Long eventI
     @Query("SELECT t FROM Team t JOIN t.juryList j WHERE j.id = :juryId AND t.eventId = :eventId AND t.deleted = false")
     List<Team> findTeamsByJuryAndEvent(Long juryId, Long eventId);
 
+    boolean existsByJuryList_Id(Long id);
 }

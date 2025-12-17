@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class Team  extends BaseEntity {
     private Long eventId;
 
     @ManyToMany
+    @Where(clause = "deleted = false")
     @JsonManagedReference
     @JoinTable(
             name = "team_jury",

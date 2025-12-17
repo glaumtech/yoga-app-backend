@@ -100,6 +100,7 @@ public class JuryController {
                 regList.stream().findFirst().ifPresent(juryItem -> {
                         authRep.findById(juryItem.getUserId()).ifPresent(user -> {
                             userMap.put("userName", user.getUsername());
+                            userMap.put("email",user.getEmail());
                             userMap.put("roleId", user.getRole() != null ? user.getRole().getId() : null);
                             userMap.put("roleName", user.getRole() != null ? user.getRole().getName() : null);
                         });
@@ -146,7 +147,7 @@ public class JuryController {
         } catch (Exception e) {
             e.printStackTrace();
             response.put("status", "error");
-            response.put("message", "Error in deleting data!");
+            response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }

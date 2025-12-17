@@ -5,6 +5,7 @@ import com.example.school.auth.AuthRep;
 import com.example.school.auth.User;
 import com.example.school.role.Role;
 import com.example.school.role.RoleRep;
+import com.example.school.team.TeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,9 @@ public class JuryService {
     private RoleRep roleRep;
     @Autowired
     private AuthRep authRep;
+
+    @Autowired
+    private TeamRepository teamRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -124,17 +128,38 @@ public ResponseDto updateUser(RequestDto request, Long juryId) {
     public void deleteData(Long id) {
         Optional<Jury> optionalJury = juryRep.findById(id);
 
-
-        if (optionalJury.isPresent()) {
-            Jury jury = optionalJury.get();
-
-
-
-            jury.setDeleted(true); // Soft delete
-            juryRep.save(jury);
-        } else {
+        if (!optionalJury.isPresent()) {
             throw new RuntimeException("Judge not found with ID: " + id);
         }
+
+        Jury jury = optionalJury.get();
+
+        // 🚫 Prevent delete if Jury is assigned to any Team
+        boolean isAssigned = teamRepository.existsByJuryList_Id(jury.getId());
+
+        if (isAssigned) {
+            throw new RuntimeException("Cannot delete. Jury is already assigned to a team.");
+        }
+
+        // Soft delete
+        jury.setDeleted(true);
+        juryRep.save(jury);
     }
+
+//    public void deleteData(Long id) {
+//        Optional<Jury> optionalJury = juryRep.findById(id);
+//
+//
+//        if (optionalJury.isPresent()) {
+//            Jury jury = optionalJury.get();
+//
+//
+//
+//            jury.setDeleted(true); // Soft delete
+//            juryRep.save(jury);
+//        } else {
+//            throw new RuntimeException("Judge not found with ID: " + id);
+//        }
+//    }
 
 }

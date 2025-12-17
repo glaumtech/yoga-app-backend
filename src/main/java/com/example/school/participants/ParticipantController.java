@@ -1,6 +1,7 @@
 package com.example.school.participants;
 
 import com.example.school.event.Event;
+import com.example.school.participants.campus.CampusList;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/participants")
@@ -316,5 +318,41 @@ public ResponseEntity<Map<String, Object>> submitData(
     }
 
 
+    @GetMapping("/campus-list")
+    public ResponseEntity<Map<String, Object>> getCampusList(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String name) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            List<CampusList> campuses = participantService.getCampusList(category,name);
+
+            List<Map<String, Object>> list = campuses.stream().map(c -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id",c.getId());
+                map.put("name", c.getName());
+                map.put("address", c.getAddress());
+                map.put("phone", c.getPhoneNo());
+                map.put("category", c.getCategory());
+                return map;
+            }).collect(Collectors.toList());
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("campusList", list);
+
+            response.put("status", "success");
+            response.put("message", "Campus list fetched successfully!");
+            response.put("data", data);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 
 }

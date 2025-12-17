@@ -12,6 +12,7 @@ public class TeamGetDto {
     private String name;
     private String category;
     private Long eventId;
+
     private List<JuryDto> juryList;
 
     public TeamGetDto(Team team) {

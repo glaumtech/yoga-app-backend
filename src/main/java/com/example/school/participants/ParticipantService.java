@@ -4,6 +4,8 @@ import com.example.school.event.Event;
 import com.example.school.event.EventRep;
 import com.example.school.participants.assignedparticipants.AssignedParticipant;
 import com.example.school.participants.assignedparticipants.AssignedRepo;
+import com.example.school.participants.campus.CampusList;
+import com.example.school.participants.campus.CampusRep;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -44,7 +46,8 @@ public class ParticipantService {
 
     @Autowired
     private ParticipantRep participantRep;
-
+    @Autowired
+    private CampusRep campusRepository;
     @Autowired
     private EventRep eventRep;
 
@@ -218,80 +221,6 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
             pageable
     );
 
-//    List<AssignedParticipant> assignedList = assignedRepo.findAllByEventId(eventId);
-//    List<ParticipantsDto> responseList = participants.stream()
-//            .map(p -> {
-//                ParticipantsDto dto = new ParticipantsDto(p);
-//
-//                // Split participant categories
-//                List<String> categories = Arrays.stream(p.getCategory().split(","))
-//                        .map(String::trim)
-//                        .map(String::toLowerCase)
-//                        .toList();
-//
-//                // Assigned categories for this participant
-//                List<String> assignedCategories = assignedList.stream()
-//                        .filter(a -> a.getParticipantId().equals(p.getId()))
-//                        .map(a -> a.getCategory().trim().toLowerCase())
-//                        .toList();
-//
-//                // Map to hold combined status for each category
-//                Map<String, String> categoryStatusMap = new HashMap<>();
-//
-//                if (filterCategory != null || filterAssignmentStatus != null) {
-//                    // Filtered case: pick first matching category
-//                    String selectedCategory = null;
-//
-//                    for (String cat : categories) {
-//                        // Category filter
-//                        if (filterCategory != null && !cat.equalsIgnoreCase(filterCategory.trim().toLowerCase()))
-//                            continue;
-//
-//                        // AssignmentStatus filter
-//                        boolean assigned = assignedCategories.contains(cat);
-//                        if (filterAssignmentStatus != null) {
-//                            if (filterAssignmentStatus.equalsIgnoreCase("Assigned") && !assigned) continue;
-//                            if (filterAssignmentStatus.equalsIgnoreCase("Un Assigned") && assigned) continue;
-//                        }
-//
-//                        selectedCategory = cat;
-//                        break;
-//                    }
-//
-//                    if (selectedCategory == null) return null;
-//
-//                    dto.setCategory(selectedCategory);
-//                 //   dto.setAssignmentStatus(assignedCategories.contains(selectedCategory) ? "Assigned" : "Un Assigned");
-//
-//                    // Only include the filtered category in categoryStatusMap
-//                    boolean assigned = assignedCategories.contains(selectedCategory);
-//                    String finalSelectedCategory = selectedCategory;
-//                    boolean scored = assignedList.stream()
-//                            .anyMatch(a -> a.getParticipantId().equals(p.getId())
-//                                    && a.getCategory().trim().equalsIgnoreCase(finalSelectedCategory)
-//                                    && Boolean.TRUE.equals(a.isScored()));
-//                    categoryStatusMap.put(selectedCategory, (assigned ? "Assigned" : "Un Assigned") + ", " + (scored ? "Scored" : "Not Scored"));
-//
-//                }  else {
-//                    // No filters: include all categories
-//                    dto.setCategory(String.join(", ", categories));
-//
-//                    for (String cat : categories) {
-//                        boolean assigned = assignedCategories.contains(cat);
-//                        boolean scored = assignedList.stream()
-//                                .anyMatch(a -> a.getParticipantId().equals(p.getId())
-//                                        && a.getCategory().trim().equalsIgnoreCase(cat)
-//                                        && Boolean.TRUE.equals(a.isScored()));
-//                        categoryStatusMap.put(cat, (assigned ? "Assigned" : "Un Assigned") + ", " + (scored ? "Scored" : "Not Scored"));
-//                    }
-//                }
-//
-//                dto.setCategoryStatusMap(categoryStatusMap);
-//
-//                return dto;
-//            })
-//            .filter(Objects::nonNull)
-//            .toList();
 
     List<AssignedParticipant> assignedList = assignedRepo.findAllByEventId(eventId);
     List<ParticipantsDto> responseList = participants.stream()
@@ -556,38 +485,7 @@ public Page<ParticipantsDto> getFilteredByEvent(Long eventId, PageFilterRequest 
         return participantRep.findById(id)
                 .orElseThrow(() -> new RuntimeException("Participant not found with id: " + id));
     }
-//    public byte[] generateCertificatePdf(Long participantId) throws Exception {
-//
-//        // 1️⃣ Fetch participant details
-//        Participants participant = getParticipantById(participantId);
-//        if (participant == null) {
-//            throw new RuntimeException("Participant not found");
-//        }
-//
-//        // 2️⃣ Prepare Thymeleaf context
-//        Context context = new Context();
-//        context.setVariable("participantName", participant.getParticipantName());
-//        context.setVariable("coordinator", "Jane Smith");
-//        context.setVariable("schoolName",participant.getSchoolName());
-//        context.setVariable("message", "Your dedication and commitment to the art of yoga is commendable. We celebrate your journey of wellness and growth.");
-//
-//        // 3️⃣ Render Thymeleaf HTML template
-//        String htmlContent = templateEngine.process("certificate", context);
-//
-//        // 4️⃣ Convert HTML to PDF (iText 5)
-//        ByteArrayOutputStream out = new ByteArrayOutputStream();
-//        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
-//        PdfWriter.getInstance(document, out);
-//        document.open();
-//
-//        List<Element> elements = HTMLWorker.parseToList(new StringReader(htmlContent), null);
-//        for (Element e : elements) {
-//            document.add(e);
-//        }
-//
-//        document.close();
-//        return out.toByteArray();
-//    }
+
 public byte[] generateCertificatePdf(Long participantId) throws IOException {
     Participants participant = getParticipantById(participantId);
 
@@ -620,6 +518,27 @@ public byte[] generateCertificatePdf(Long participantId) throws IOException {
     }
 }
 
+
+
+    public List<CampusList> getCampusList(String category,String search) {
+        if (category == null || category.isEmpty()) {
+            throw new IllegalArgumentException("Category  is required!");
+        }
+
+        // Fetch campuses by category
+        List<CampusList> campuses = campusRepository.findByCategory(category);
+
+        // If search is provided, filter by name
+        if (search != null && !search.isEmpty()) {
+            String searchLower = search.toLowerCase();
+            campuses = campuses.stream()
+                    .filter(c -> c.getName() != null && c.getName().toLowerCase().contains(searchLower))
+                    .collect(Collectors.toList());
+        }
+
+        return campuses;
+
+    }
 }
 
 

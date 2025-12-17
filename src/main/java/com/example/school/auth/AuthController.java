@@ -74,11 +74,19 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserRequest request) {
         Optional<User> user = authService.findByEmail(request.getEmail());
-        System.out.println("Raw password: '" + request.getPassword() + "'"+"user"+user.get());
-        System.out.println("Hashed password: '" + user.get().getPassword() + "'");
-        System.out.println("Password match: " + passwordEncoder.matches(request.getPassword(), user.get().getPassword()));
+
         Map<String, Object> response = new HashMap<>();
         Map<String, Object> data = new HashMap<>();
+        if (!user.isPresent()) {
+            // user not found -> no exception -> proper response
+            Map<String, Object> responses = new HashMap<>();
+            responses.put("status", "failure");
+            responses.put("message", "Invalid credentials");
+            responses.put("data", null);
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responses);
+
+        }
         if (user.isPresent() && passwordEncoder.matches(request.getPassword(), user.get().getPassword())) {
 
             UserDetails userDetail = userDetailsService.loadUserByUsername(request.getEmail());
